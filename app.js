@@ -1,5 +1,6 @@
 const initialData = {
   dataVersion: 2,
+  activityVersion: 2,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -19,7 +20,8 @@ const initialData = {
     ["🏊", "Baignade", "Plan d'eau"], ["🏄", "Paddle", "Sur le lac"],
     ["🛶", "Canoë", "Sur le lac"], ["🌲", "Accrobranche", "À vérifier"],
     ["⛳", "Mini-golf", "À proximité"], ["⛰", "Les Orres", "Montagne"],
-    ["🥾", "Randonnée", "Selon le niveau"], ["🌅", "Coucher de soleil", "Gratuit"]
+    ["🥾", "Randonnée", "Selon le niveau"], ["🌅", "Coucher de soleil", "Gratuit"],
+    ["✨", "Et plein d'autres…", "À découvrir ensemble"]
   ],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -80,6 +82,10 @@ function normalizeData(source) {
   if (source?.dataVersion !== initialData.dataVersion) {
     normalized.dataVersion = initialData.dataVersion;
     normalized.days = structuredClone(initialData.days);
+  }
+  if (source?.activityVersion !== initialData.activityVersion) {
+    normalized.activityVersion = initialData.activityVersion;
+    normalized.activities = structuredClone(initialData.activities);
   }
   return normalized;
 }
