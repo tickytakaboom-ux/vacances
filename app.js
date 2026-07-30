@@ -2,6 +2,7 @@ const initialData = {
   dataVersion: 3,
   activityVersion: 2,
   faqVersion: 3,
+  checklistVersion: 1,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -23,6 +24,17 @@ const initialData = {
     ["⛳", "Mini-golf", "À proximité"], ["⛰", "Les Orres", "Montagne"],
     ["🥾", "Randonnée", "Selon le niveau"], ["🌅", "Coucher de soleil", "Gratuit"],
     ["✨", "Et plein d'autres…", "À découvrir ensemble"]
+  ],
+  checklist: [
+    { id: "clothes", text: "Vêtements pour la semaine", checked: false, author: "" },
+    { id: "sheets", text: "Draps, si on ne les loue pas", checked: false, author: "" },
+    { id: "towels", text: "Serviettes, si on ne les loue pas", checked: false, author: "" },
+    { id: "swimsuit", text: "Maillot de bain", checked: false, author: "" },
+    { id: "shoes", text: "Chaussures pour marcher", checked: false, author: "" },
+    { id: "toiletries", text: "Trousse de toilette", checked: false, author: "" },
+    { id: "medicine", text: "Médicaments personnels", checked: false, author: "" },
+    { id: "games", text: "Jeux", checked: false, author: "" },
+    { id: "speaker", text: "Enceinte et chargeur", checked: false, author: "" }
   ],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -95,6 +107,10 @@ function normalizeData(source) {
     normalized.faqVersion = initialData.faqVersion;
     normalized.faqs = structuredClone(initialData.faqs);
   }
+  if (source?.checklistVersion !== initialData.checklistVersion) {
+    normalized.checklistVersion = initialData.checklistVersion;
+    normalized.checklist = structuredClone(initialData.checklist);
+  }
   return normalized;
 }
 
@@ -116,7 +132,42 @@ function render() {
   document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${escapeHTML(a[0])}</span><div><strong>${escapeHTML(a[1])}</strong><small>${escapeHTML(a[2])}</small></div></article>`).join("");
   document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
+  renderChecklist();
   updateBudget();
+}
+
+function renderChecklist() {
+  const list = document.querySelector("#checklistList");
+  const completed = data.checklist.filter(item => item.checked).length;
+  document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
+  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", async event => {
+    const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
+    item.checked = event.target.checked;
+    item.author = currentUserName();
+    renderChecklist();
+    const synced = await saveData();
+    showToast(synced ? "Check-list partagée" : "Check-list sauvegardée sur cet appareil");
+  }));
+  list.querySelectorAll(".check-edit").forEach(button => button.addEventListener("click", async event => {
+    const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
+    const nextText = prompt("Modifier cet élément :", item.text)?.trim();
+    if (!nextText || nextText === item.text) return;
+    item.text = nextText;
+    item.author = currentUserName();
+    renderChecklist();
+    const synced = await saveData();
+    showToast(synced ? "Élément modifié pour tout le monde" : "Modification sauvegardée sur cet appareil");
+  }));
+  list.querySelectorAll(".check-delete").forEach(button => button.addEventListener("click", async event => {
+    const id = event.target.closest(".checklist-item").dataset.id;
+    const item = data.checklist.find(entry => entry.id === id);
+    if (!confirm(`Supprimer « ${item.text} » de la liste ?`)) return;
+    data.checklist = data.checklist.filter(entry => entry.id !== id);
+    renderChecklist();
+    const synced = await saveData();
+    showToast(synced ? "Élément supprimé pour tout le monde" : "Suppression sauvegardée sur cet appareil");
+  }));
 }
 
 function updateBudget() {
@@ -184,6 +235,17 @@ function showToast(message) {
 }
 
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
+document.querySelector("#checklistForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const input = document.querySelector("#checklistInput");
+  const text = input.value.trim().replace(/\s+/g, " ");
+  if (!text) return;
+  data.checklist.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, checked: false, author: currentUserName() });
+  input.value = "";
+  renderChecklist();
+  const synced = await saveData();
+  showToast(synced ? "Ajouté à la liste partagée" : "Ajouté sur cet appareil");
+});
 document.querySelector("#editButton").addEventListener("click", () => editing ? setEditing(false) : document.querySelector("#editDialog").showModal());
 document.querySelector("#toggleEdit").addEventListener("click", () => { document.querySelector("#editDialog").close(); setEditing(true); });
 let adminTapCount = 0;
