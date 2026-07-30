@@ -1,5 +1,5 @@
 const initialData = {
-  dataVersion: 2,
+  dataVersion: 3,
   activityVersion: 2,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
@@ -7,14 +7,14 @@ const initialData = {
   },
   textAuthors: {},
   days: [
-    ["Jour 1 · Samedi", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
-    ["Jour 2 · Dimanche", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 3 · Lundi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 4 · Mardi", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
-    ["Jour 5 · Mercredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 6 · Jeudi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 7 · Vendredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 8 · Samedi", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
+    ["Jour 1 · Dimanche", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
+    ["Jour 2 · Lundi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 3 · Mardi", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
+    ["Jour 4 · Mercredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 5 · Jeudi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 6 · Vendredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 7 · Samedi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 8 · Dimanche", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
   ],
   activities: [
     ["🏊", "Baignade", "Plan d'eau"], ["🏄", "Paddle", "Sur le lac"],
@@ -120,7 +120,7 @@ function updateBudget() {
 }
 
 function updateCountdown() {
-  const departure = new Date("2027-07-03T00:00:00+02:00");
+  const departure = new Date("2027-07-04T00:00:00+02:00");
   const remaining = departure.getTime() - Date.now();
   if (remaining <= 0) {
     document.querySelector("#countdown").innerHTML = "<strong class=\"countdown-live\">C'est parti !</strong>";
