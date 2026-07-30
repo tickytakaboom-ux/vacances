@@ -57,7 +57,9 @@
         <p class="eyebrow dark">Le voyage en bref</p>
         <h2>Le grand air,<br>sans prise de tête.</h2>
       </div>
-      <p class="lead editable" data-key="intro">Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.</p>
+      <div class="editable-block">
+        <p class="lead editable" data-key="intro">Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.</p>
+      </div>
       <div class="stat-grid">
         <article class="stat-card"><strong>7</strong><span>zigotos</span></article>
         <article class="stat-card"><strong>1</strong><span>semaine</span></article>
@@ -117,7 +119,9 @@
       <div class="camping-copy">
         <p class="eyebrow dark">Notre camp de base</p>
         <h2>Camping<br>La Clapière</h2>
-        <p class="editable" data-key="camping">Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied.</p>
+        <div class="editable-block">
+          <p class="editable" data-key="camping">Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied.</p>
+        </div>
         <dl>
           <div><dt>Logement</dt><dd>Chalet 7 personnes</dd></div>
           <div><dt>Adresse</dt><dd>Avenue du Lac, 05200 Embrun</dd></div>
@@ -179,7 +183,7 @@
       <p class="last-editor" id="lastEditor">Le premier changement partagé apparaîtra ici.</p>
       <div class="dialog-actions">
         <button type="button" class="button button-dark" id="toggleEdit">Activer l'édition</button>
-        <button type="button" class="danger-link" id="resetData">Restaurer la version initiale pour tout le monde</button>
+        <button type="button" class="danger-link" id="resetData" hidden>Restaurer la version initiale pour tout le monde</button>
       </div>
     </form>
   </dialog>

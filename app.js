@@ -37,6 +37,8 @@ const initialData = {
 
 const key = "zigotos-embrun-data-v1";
 const nameKey = "zigotos-first-name-v1";
+const adminKey = "zigotos-admin-v1";
+const adminCodeHash = "a8f5c8afb801ba1992ca7ccb79908e1d78c493a0f03cbe310c6b561f9d4647f5";
 let data = loadData();
 let editing = false;
 let editSnapshot = null;
@@ -54,6 +56,16 @@ function currentUserName() {
 function updateUserBadge(name) {
   document.querySelector("#userName").textContent = name || "Invité";
   document.querySelector("#userInitial").textContent = name ? name.charAt(0).toUpperCase() : "?";
+}
+
+function updateAdminControls() {
+  document.querySelector("#resetData").hidden = localStorage.getItem(adminKey) !== "true";
+}
+
+async function isValidAdminCode(code) {
+  const bytes = new TextEncoder().encode(code);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, "0")).join("") === adminCodeHash;
 }
 
 function loadData() {
@@ -129,7 +141,26 @@ function showToast(message) {
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
 document.querySelector("#editButton").addEventListener("click", () => editing ? setEditing(false) : document.querySelector("#editDialog").showModal());
 document.querySelector("#toggleEdit").addEventListener("click", () => { document.querySelector("#editDialog").close(); setEditing(true); });
+let adminTapCount = 0;
+let adminTapTimer = null;
+document.querySelector("#userChip").addEventListener("click", async () => {
+  adminTapCount += 1;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2200);
+  if (adminTapCount < 5) return;
+  adminTapCount = 0;
+  const code = prompt("Code administrateur :");
+  if (!code) return;
+  if (await isValidAdminCode(code)) {
+    localStorage.setItem(adminKey, "true");
+    updateAdminControls();
+    showToast("Mode administrateur activé sur cet appareil");
+  } else {
+    showToast("Code administrateur incorrect");
+  }
+});
 document.querySelector("#resetData").addEventListener("click", async () => {
+  if (localStorage.getItem(adminKey) !== "true") return;
   if (confirm("Restaurer la version initiale pour tout le monde ?")) {
     data = structuredClone(initialData);
     render();
@@ -159,6 +190,7 @@ window.addEventListener("shared-trip-data", event => {
 
 render();
 updateUserBadge(currentUserName());
+updateAdminControls();
 
 if (!localStorage.getItem(nameKey)) {
   document.querySelector("#nameDialog").showModal();
