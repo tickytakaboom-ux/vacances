@@ -1,17 +1,19 @@
 const initialData = {
+  dataVersion: 2,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
   },
   textAuthors: {},
   days: [
-    ["Jour 1", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
-    ["Jour 2", "Plan d'eau d'Embrun", "Baignade, paddle ou canoë, puis coucher de soleil au bord du lac."],
-    ["Jour 3", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 4", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
-    ["Jour 5", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 6", "Embrun et alentours", "Balade en ville, bonnes adresses et dernière grande soirée."],
-    ["Jour 7", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
+    ["Jour 1 · Samedi", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
+    ["Jour 2 · Dimanche", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 3 · Lundi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 4 · Mardi", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
+    ["Jour 5 · Mercredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 6 · Jeudi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 7 · Vendredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 8 · Samedi", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
   ],
   activities: [
     ["🏊", "Baignade", "Plan d'eau"], ["🏄", "Paddle", "Sur le lac"],
@@ -69,8 +71,17 @@ async function isValidAdminCode(code) {
 }
 
 function loadData() {
-  try { return { ...initialData, ...JSON.parse(localStorage.getItem(key)) }; }
+  try { return normalizeData(JSON.parse(localStorage.getItem(key))); }
   catch { return structuredClone(initialData); }
+}
+
+function normalizeData(source) {
+  const normalized = { ...structuredClone(initialData), ...(source || {}) };
+  if (source?.dataVersion !== initialData.dataVersion) {
+    normalized.dataVersion = initialData.dataVersion;
+    normalized.days = structuredClone(initialData.days);
+  }
+  return normalized;
 }
 
 async function saveData() {
@@ -198,7 +209,7 @@ document.querySelector("#nameForm").addEventListener("submit", event => {
 
 window.getTripData = () => structuredClone(data);
 window.addEventListener("shared-trip-data", event => {
-  data = { ...structuredClone(initialData), ...event.detail };
+  data = normalizeData(event.detail);
   localStorage.setItem(key, JSON.stringify(data));
   render();
 });
