@@ -299,6 +299,20 @@ function showToast(message) {
 }
 
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
+const navigationLinks = [...document.querySelectorAll(".section-nav a,.mobile-nav a")];
+const observedSections = [...document.querySelectorAll("main section[id]")];
+if ("IntersectionObserver" in window) {
+  const sectionObserver = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!visible) return;
+    navigationLinks.forEach(link => {
+      const active = link.getAttribute("href") === `#${visible.target.id}`;
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "location"); else link.removeAttribute("aria-current");
+    });
+  }, { rootMargin: "-18% 0px -62%", threshold: [0, .15, .4] });
+  observedSections.forEach(section => sectionObserver.observe(section));
+}
 document.querySelector("#checklistForm").addEventListener("submit", async event => {
   event.preventDefault();
   const input = document.querySelector("#checklistInput");
