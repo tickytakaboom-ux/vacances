@@ -4,26 +4,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /trips/embrun-2027 {
       allow read: if request.auth != null;
-      allow create, update: if request.auth != null
-        && request.resource.data.keys().hasOnly(['content', 'updatedAt', 'updatedByUid', 'updatedByName'])
-        && request.resource.data.content is map
-        && request.resource.data.updatedByUid == request.auth.uid
-        && request.resource.data.updatedByName is string
-        && request.resource.data.updatedByName.size() >= 2
-        && request.resource.data.updatedByName.size() <= 24;
+      allow create, update: if request.auth != null;
       allow delete: if false;
     }
 
     match /trips/embrun-2027/history/{entryId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['content', 'changedSections', 'changedByUid', 'changedByName', 'changedAt'])
-        && request.resource.data.content is map
-        && request.resource.data.changedSections is list
-        && request.resource.data.changedByUid == request.auth.uid
-        && request.resource.data.changedByName is string
-        && request.resource.data.changedByName.size() >= 2
-        && request.resource.data.changedByName.size() <= 24;
+      allow create: if request.auth != null;
       allow update, delete: if false;
     }
 

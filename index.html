@@ -19,7 +19,11 @@
       <span>Les Zigotos</span>
     </a>
     <div class="top-actions">
-      <span class="sync-status" id="syncStatus"><i></i><span>Connexion…</span></span>
+      <span class="user-chip" id="userChip" title="Connexion…">
+        <span class="user-avatar" id="userInitial">?</span>
+        <span id="userName">Invité</span>
+        <i class="sync-dot" id="syncDot"></i>
+      </span>
       <button class="edit-button" id="editButton" type="button" aria-pressed="false">
         <span aria-hidden="true">✎</span> Modifier
       </button>
@@ -172,7 +176,7 @@
     <form method="dialog">
       <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer">×</button></div>
       <p>Les changements sont enregistrés sur cet appareil et synchronisés avec le carnet partagé dès qu'une connexion est disponible.</p>
-      <p class="last-editor" id="lastEditor">Aucune modification partagée pour le moment.</p>
+      <p class="last-editor" id="lastEditor">Le premier changement partagé apparaîtra ici.</p>
       <div class="dialog-actions">
         <button type="button" class="button button-dark" id="toggleEdit">Activer l'édition</button>
         <button type="button" class="button button-outline" id="exportData">Exporter les changements</button>

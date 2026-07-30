@@ -38,24 +38,39 @@ const key = "zigotos-embrun-data-v1";
 const nameKey = "zigotos-first-name-v1";
 let data = loadData();
 let editing = false;
+let editSnapshot = null;
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+
+function escapeHTML(value = "") {
+  return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+}
+
+function currentUserName() {
+  return localStorage.getItem(nameKey) || "";
+}
+
+function updateUserBadge(name) {
+  document.querySelector("#userName").textContent = name || "Invité";
+  document.querySelector("#userInitial").textContent = name ? name.charAt(0).toUpperCase() : "?";
+}
 
 function loadData() {
   try { return { ...initialData, ...JSON.parse(localStorage.getItem(key)) }; }
   catch { return structuredClone(initialData); }
 }
 
-function saveData() {
+async function saveData() {
   document.querySelectorAll(".editable[data-key]").forEach(el => data.text[el.dataset.key] = el.textContent.trim());
   localStorage.setItem(key, JSON.stringify(data));
-  window.saveSharedTrip?.(data);
+  if (!window.saveSharedTrip) return false;
+  return window.saveSharedTrip(structuredClone(data));
 }
 
 function render() {
   document.querySelectorAll(".editable[data-key]").forEach(el => el.textContent = data.text[el.dataset.key]);
-  document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${d[0]}</span><div><strong class="day-title" data-index="${i}">${d[1]}</strong><p class="day-copy" data-index="${i}">${d[2]}</p></div></article>`).join("");
-  document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${a[0]}</span><div><strong>${a[1]}</strong><small>${a[2]}</small></div></article>`).join("");
-  document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${f[0]}<span>+</span></button><div class="faq-answer">${f[1]}</div></article>`).join("");
+  document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${escapeHTML(d[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${i}">${escapeHTML(d[1])}</strong>${d[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(d[3])}"><b>${escapeHTML(d[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(d[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${i}">${escapeHTML(d[2])}</p></div></article>`).join("");
+  document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${escapeHTML(a[0])}</span><div><strong>${escapeHTML(a[1])}</strong><small>${escapeHTML(a[2])}</small></div></article>`).join("");
+  document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
   updateBudget();
 }
@@ -68,8 +83,9 @@ function updateBudget() {
   document.querySelector("#budgetList").innerHTML = budget.items.map(item => `<div class="budget-row"><span>${item[0]}</span><strong>${euro.format(item[1])} / pers.</strong></div>`).join("");
 }
 
-function setEditing(active) {
+async function setEditing(active) {
   editing = active;
+  if (active) editSnapshot = structuredClone(data.days);
   document.body.classList.toggle("editing", active);
   document.querySelector("#editButton").setAttribute("aria-pressed", String(active));
   document.querySelector("#editButton").innerHTML = active ? "✓ Terminer" : "<span aria-hidden=\"true\">✎</span> Modifier";
@@ -78,7 +94,12 @@ function setEditing(active) {
   if (!active) {
     document.querySelectorAll(".day-title").forEach(el => data.days[el.dataset.index][1] = el.textContent.trim());
     document.querySelectorAll(".day-copy").forEach(el => data.days[el.dataset.index][2] = el.textContent.trim());
-    saveData(); showToast("Changements enregistrés sur cet appareil");
+    data.days.forEach((day, index) => {
+      if (editSnapshot && (day[1] !== editSnapshot[index]?.[1] || day[2] !== editSnapshot[index]?.[2])) day[3] = currentUserName();
+    });
+    render();
+    const synced = await saveData();
+    showToast(synced ? "Changements partagés avec le groupe" : "Sauvegardé sur cet appareil — Firebase indisponible");
   }
 }
 
@@ -95,11 +116,17 @@ document.querySelector("#exportData").addEventListener("click", () => {
   const a = Object.assign(document.createElement("a"), {href:URL.createObjectURL(blob), download:"embrun-2027.json"}); a.click(); URL.revokeObjectURL(a.href); showToast("Fichier exporté");
 });
 document.querySelector("#importData").addEventListener("change", async e => {
-  try { data = JSON.parse(await e.target.files[0].text()); saveData(); render(); document.querySelector("#editDialog").close(); showToast("Changements importés et synchronisés"); }
+  try { data = JSON.parse(await e.target.files[0].text()); render(); const synced = await saveData(); document.querySelector("#editDialog").close(); showToast(synced ? "Changements importés et partagés" : "Importé localement — Firebase indisponible"); }
   catch { showToast("Ce fichier n'est pas valide"); }
 });
-document.querySelector("#resetData").addEventListener("click", () => {
-  if (confirm("Restaurer la version initiale pour tout le monde ?")) { data = structuredClone(initialData); saveData(); render(); document.querySelector("#editDialog").close(); showToast("Version initiale restaurée et synchronisée"); }
+document.querySelector("#resetData").addEventListener("click", async () => {
+  if (confirm("Restaurer la version initiale pour tout le monde ?")) {
+    data = structuredClone(initialData);
+    render();
+    const synced = await saveData();
+    document.querySelector("#editDialog").close();
+    showToast(synced ? "Version initiale restaurée pour tout le monde" : "Reset local uniquement — Firebase indisponible");
+  }
 });
 
 document.querySelector("#nameForm").addEventListener("submit", event => {
@@ -107,6 +134,7 @@ document.querySelector("#nameForm").addEventListener("submit", event => {
   const name = document.querySelector("#firstName").value.trim().replace(/\s+/g, " ");
   if (name.length < 2) return;
   localStorage.setItem(nameKey, name);
+  updateUserBadge(name);
   document.querySelector("#nameDialog").close();
   window.dispatchEvent(new CustomEvent("trip-user-ready", { detail: name }));
   showToast(`Bienvenue ${name} !`);
@@ -120,6 +148,7 @@ window.addEventListener("shared-trip-data", event => {
 });
 
 render();
+updateUserBadge(currentUserName());
 
 if (!localStorage.getItem(nameKey)) {
   document.querySelector("#nameDialog").showModal();

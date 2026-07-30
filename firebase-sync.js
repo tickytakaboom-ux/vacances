@@ -12,23 +12,22 @@ const firebaseConfig = {
   measurementId: "G-TZ4QFX9QHK"
 };
 
-const status = document.querySelector("#syncStatus");
-const statusText = status.querySelector("span");
+const userChip = document.querySelector("#userChip");
+const syncDot = document.querySelector("#syncDot");
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const tripRef = doc(db, "trips", "embrun-2027");
 let user = null;
-let saveTimer = null;
 let pendingData = null;
 let userName = localStorage.getItem("zigotos-first-name-v1") || "";
 let lastRemoteData = null;
 
 function setStatus(label, state = "") {
-  statusText.textContent = label;
-  status.classList.remove("online", "error");
-  if (state) status.classList.add(state);
-  status.title = label;
+  syncDot.classList.remove("online", "error");
+  if (state) syncDot.classList.add(state);
+  userChip.title = label;
+  if (state === "error") document.querySelector("#lastEditor").textContent = "Firebase n'est pas connecté : les changements restent uniquement sur cet appareil.";
 }
 
 async function writeSharedData(content) {
@@ -48,31 +47,29 @@ async function writeSharedData(content) {
       updatedByUid: user.uid,
       updatedByName: userName
     });
-    await addDoc(collection(db, "trips", "embrun-2027", "history"), {
-      content,
-      changedSections,
-      changedByUid: user.uid,
-      changedByName: userName,
-      changedAt: serverTimestamp()
-    });
     lastRemoteData = structuredClone(content);
     setStatus("Synchronisé", "online");
+    try {
+      await addDoc(collection(db, "trips", "embrun-2027", "history"), {
+        content,
+        changedSections,
+        changedByUid: user.uid,
+        changedByName: userName,
+        changedAt: serverTimestamp()
+      });
+    } catch (historyError) {
+      console.warn("Firebase history save failed", historyError);
+    }
+    return true;
   } catch (error) {
     console.error("Firebase save failed", error);
     pendingData = content;
     setStatus("Sauvegardé localement", "error");
+    return false;
   }
 }
 
-window.saveSharedTrip = content => {
-  pendingData = structuredClone(content);
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    const queued = pendingData;
-    pendingData = null;
-    writeSharedData(queued);
-  }, 450);
-};
+window.saveSharedTrip = content => writeSharedData(structuredClone(content));
 
 async function connect() {
   try {
