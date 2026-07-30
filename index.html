@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#173f35">
+  <meta name="description" content="Le carnet partagé du séjour des Zigotos à Embrun en 2027.">
+  <title>Les Zigotos à Embrun</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#accueil" aria-label="Retour à l'accueil">
+      <span class="brand-mark">Z</span>
+      <span>Les Zigotos</span>
+    </a>
+    <div class="top-actions">
+      <span class="sync-status" id="syncStatus"><i></i><span>Connexion…</span></span>
+      <button class="edit-button" id="editButton" type="button" aria-pressed="false">
+        <span aria-hidden="true">✎</span> Modifier
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="accueil">
+      <div class="hero-orb orb-one"></div>
+      <div class="hero-orb orb-two"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Vacances d'été · 2027</p>
+        <h1>Direction<br><em>Embrun</em></h1>
+        <p class="hero-copy">Une semaine entre lac et montagnes, à sept, au Camping de la Clapière.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#programme">Voir le programme</a>
+          <a class="button button-ghost" href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noreferrer">Ouvrir la carte ↗</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="weather-mark" aria-hidden="true"><span></span></div>
+        <p>Camping La Clapière</p>
+        <strong>3–10 ou 10–17 juillet</strong>
+        <small>7 personnes · 7 h de route</small>
+      </div>
+      <div class="scroll-hint">Découvrir <span>↓</span></div>
+    </section>
+
+    <section class="section intro-section">
+      <div>
+        <p class="eyebrow dark">Le voyage en bref</p>
+        <h2>Le grand air,<br>sans prise de tête.</h2>
+      </div>
+      <p class="lead editable" data-key="intro">Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.</p>
+      <div class="stat-grid">
+        <article class="stat-card"><strong>7</strong><span>zigotos</span></article>
+        <article class="stat-card"><strong>1</strong><span>semaine</span></article>
+        <article class="stat-card accent"><strong>≈ 344 €</strong><span>par personne</span></article>
+      </div>
+    </section>
+
+    <section class="section split-section" id="programme">
+      <div class="section-heading">
+        <p class="eyebrow dark">Programme</p>
+        <h2>Une semaine<br>à notre rythme.</h2>
+        <p>Le planning reste volontairement souple. En mode édition, chacun peut compléter les journées sur son appareil.</p>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section class="activity-section" id="activites">
+      <div class="section activity-inner">
+        <div class="section-heading light-heading">
+          <p class="eyebrow">À faire sur place</p>
+          <h2>Choisir selon<br>l'envie du jour.</h2>
+        </div>
+        <div class="activity-grid" id="activityGrid"></div>
+      </div>
+    </section>
+
+    <section class="section" id="budget">
+      <div class="section-heading budget-heading">
+        <div>
+          <p class="eyebrow dark">Budget prévisionnel</p>
+          <h2>Simple, clair,<br>partagé.</h2>
+        </div>
+        <label class="people-control">Participants
+          <select id="peopleSelect" aria-label="Nombre de participants">
+            <option value="4">4 personnes</option>
+            <option value="5">5 personnes</option>
+            <option value="6">6 personnes</option>
+            <option value="7" selected>7 personnes</option>
+          </select>
+        </label>
+      </div>
+      <div class="budget-layout">
+        <article class="total-card">
+          <p>Estimation par personne</p>
+          <strong id="perPersonTotal">344,48 €</strong>
+          <span id="groupTotal">Total du groupe : 2 411,34 €</span>
+          <small>Taxes du chalet incluses</small>
+        </article>
+        <div class="budget-list" id="budgetList"></div>
+      </div>
+    </section>
+
+    <section class="section camping-section" id="camping">
+      <div class="camping-visual" aria-label="Illustration du lac et des montagnes">
+        <div class="sun"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div><div class="lake"></div>
+      </div>
+      <div class="camping-copy">
+        <p class="eyebrow dark">Notre camp de base</p>
+        <h2>Camping<br>La Clapière</h2>
+        <p class="editable" data-key="camping">Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied.</p>
+        <dl>
+          <div><dt>Logement</dt><dd>Chalet 7 personnes</dd></div>
+          <div><dt>Adresse</dt><dd>Avenue du Lac, 05200 Embrun</dd></div>
+          <div><dt>Prix estimé</dt><dd>951,34 € taxes incluses</dd></div>
+        </dl>
+        <a class="text-link" href="https://www.camping-embrun-clapiere.com/" target="_blank" rel="noreferrer">Voir le site du camping ↗</a>
+      </div>
+    </section>
+
+    <section class="section links-section" id="liens">
+      <div class="section-heading">
+        <p class="eyebrow dark">Tout au même endroit</p>
+        <h2>Liens utiles.</h2>
+      </div>
+      <div class="link-grid">
+        <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noreferrer"><span>01</span><strong>Notre carte</strong><small>Google Maps ↗</small></a>
+        <a href="https://calendar.google.com/calendar/u/0?cid=MmViNDVlNWU0MWUwZDM4Yzg4YzQ0OTAyMDczMzNmNjc0NDQwOTA3ZWM0YzE5M2I2ZGU0NjkzZTQ1YzU0MzgyMUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t" target="_blank" rel="noreferrer"><span>02</span><strong>Calendrier</strong><small>Google Agenda ↗</small></a>
+        <a href="https://1drv.ms/x/c/339f97857d6993e7/IQBGoKMz5WzKQbTa9L4u_ZAYAZ5mIUL807s51vrcFDVk3dQ?e=PnYQcn" target="_blank" rel="noreferrer"><span>03</span><strong>Budget original</strong><small>Excel en ligne ↗</small></a>
+        <a href="https://www.youtube.com/watch?v=0PtBhmRqBPc" target="_blank" rel="noreferrer"><span>04</span><strong>Voir le camping</strong><small>Vidéo YouTube ↗</small></a>
+        <a href="https://www.youtube.com/watch?v=pYZUeqefw-w" target="_blank" rel="noreferrer"><span>05</span><strong>Voir le plan d'eau</strong><small>Vidéo YouTube ↗</small></a>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="infos">
+      <div class="section-heading"><p class="eyebrow dark">Questions pratiques</p><h2>On anticipe<br>comme L.</h2></div>
+      <div class="faq-list" id="faqList"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div><span class="brand-mark">Z</span><strong>Embrun 2027</strong></div>
+    <p>Fait avec beaucoup trop d'avance, comme il se doit.</p>
+  </footer>
+
+  <nav class="mobile-nav" aria-label="Navigation principale">
+    <a href="#accueil"><span>⌂</span>Accueil</a>
+    <a href="#programme"><span>◷</span>Programme</a>
+    <a href="#budget"><span>€</span>Budget</a>
+    <a href="#liens"><span>↗</span>Liens</a>
+  </nav>
+
+  <dialog id="editDialog">
+    <form method="dialog">
+      <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer">×</button></div>
+      <p>Les changements sont enregistrés sur cet appareil et synchronisés avec le carnet partagé dès qu'une connexion est disponible.</p>
+      <div class="dialog-actions">
+        <button type="button" class="button button-dark" id="toggleEdit">Activer l'édition</button>
+        <button type="button" class="button button-outline" id="exportData">Exporter les changements</button>
+        <label class="button button-outline file-label">Importer un fichier<input type="file" id="importData" accept="application/json"></label>
+        <button type="button" class="danger-link" id="resetData">Effacer les changements locaux</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+  <script type="module" src="firebase-sync.js"></script>
+</body>
+</html>
