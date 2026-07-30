@@ -1,6 +1,7 @@
 const initialData = {
   dataVersion: 3,
   activityVersion: 2,
+  faqVersion: 2,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -30,6 +31,9 @@ const initialData = {
     "7": { total: 2411.34, perPerson: 344.48, items: [["Chalet", 135.91], ["Essence", 42.86], ["Péage", 25.71], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] }
   },
   faqs: [
+    ["D'où part-on et à quelle heure ?", "Le départ se fera depuis Maurepas, à 7 h au plus tard."],
+    ["Comment se répartit-on dans les voitures ?", "Deux voitures sont prévues : 3 personnes dans l'une et 4 personnes dans l'autre. La répartition exacte sera décidée avant le départ."],
+    ["Les draps et les serviettes sont-ils fournis ?", "Oui, en supplément. Les draps coûtent 15 € pour une personne ou 25 € pour deux personnes. Le kit avec une petite et une grande serviette coûte 20 € par personne."],
     ["Qui conduit ?", "Ceux qui ont le permis. Les conducteurs et les voitures seront fixés avant le départ."],
     ["Comment fait-on les courses ?", "Dans un magasin 👍 Le budget prévoit environ 40 € par personne."],
     ["Qui dort où ?", "Tout le monde dans le chalet de 7 personnes. La répartition se fera sur place."],
@@ -86,6 +90,10 @@ function normalizeData(source) {
   if (source?.activityVersion !== initialData.activityVersion) {
     normalized.activityVersion = initialData.activityVersion;
     normalized.activities = structuredClone(initialData.activities);
+  }
+  if (source?.faqVersion !== initialData.faqVersion) {
+    normalized.faqVersion = initialData.faqVersion;
+    normalized.faqs = structuredClone(initialData.faqs);
   }
   return normalized;
 }
