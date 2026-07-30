@@ -13,7 +13,7 @@ Selon le type de compte GitHub, la publication Pages depuis un dépôt privé pe
 
 ## Modifications
 
-Le bouton **Modifier** permet de changer le texte du programme et certaines présentations. Les modifications sont enregistrées localement puis synchronisées en direct dans Cloud Firestore. Si Firebase est momentanément indisponible, la copie locale reste accessible.
+Le bouton **Modifier** permet de changer le texte du programme et certaines présentations. Les modifications sont enregistrées localement puis synchronisées en direct dans Cloud Firestore. Si Firebase est momentanément indisponible, la copie locale reste accessible et sera remplacée par la version partagée à la prochaine connexion.
 
 ## Configuration Firebase
 

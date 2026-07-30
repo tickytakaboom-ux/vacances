@@ -111,14 +111,6 @@ function showToast(message) {
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
 document.querySelector("#editButton").addEventListener("click", () => editing ? setEditing(false) : document.querySelector("#editDialog").showModal());
 document.querySelector("#toggleEdit").addEventListener("click", () => { document.querySelector("#editDialog").close(); setEditing(true); });
-document.querySelector("#exportData").addEventListener("click", () => {
-  saveData(); const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
-  const a = Object.assign(document.createElement("a"), {href:URL.createObjectURL(blob), download:"embrun-2027.json"}); a.click(); URL.revokeObjectURL(a.href); showToast("Fichier exporté");
-});
-document.querySelector("#importData").addEventListener("change", async e => {
-  try { data = JSON.parse(await e.target.files[0].text()); render(); const synced = await saveData(); document.querySelector("#editDialog").close(); showToast(synced ? "Changements importés et partagés" : "Importé localement — Firebase indisponible"); }
-  catch { showToast("Ce fichier n'est pas valide"); }
-});
 document.querySelector("#resetData").addEventListener("click", async () => {
   if (confirm("Restaurer la version initiale pour tout le monde ?")) {
     data = structuredClone(initialData);
