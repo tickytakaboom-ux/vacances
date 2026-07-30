@@ -4,6 +4,7 @@ const initialData = {
   faqVersion: 3,
   checklistVersion: 3,
   contactsVersion: 1,
+  ideasVersion: 1,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -36,6 +37,7 @@ const initialData = {
     { id: "car-1", vehicle: "Voiture 1", insurer: "", number: "", author: "" },
     { id: "car-2", vehicle: "Voiture 2", insurer: "", number: "", author: "" }
   ],
+  ideas: [],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "5": { total: 1912.10, perPerson: 382.42, items: [["Chalet", 188.42], ["Essence", 36], ["Péage", 18], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -120,6 +122,10 @@ function normalizeData(source) {
     normalized.contactsVersion = initialData.contactsVersion;
     normalized.assistanceContacts = structuredClone(initialData.assistanceContacts);
   }
+  if (source?.ideasVersion !== initialData.ideasVersion) {
+    normalized.ideasVersion = initialData.ideasVersion;
+    normalized.ideas = Array.isArray(source?.ideas) ? source.ideas : [];
+  }
   return normalized;
 }
 
@@ -143,7 +149,37 @@ function render() {
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
   renderChecklist();
   renderAssistanceContacts();
+  renderIdeas();
   updateBudget();
+}
+
+function renderIdeas() {
+  const list = document.querySelector("#ideasList");
+  document.querySelector("#ideasCount").textContent = `${data.ideas.length} idée${data.ideas.length > 1 ? "s" : ""}`;
+  if (!data.ideas.length) {
+    list.innerHTML = '<p class="ideas-empty">Aucune idée pour l’instant. À vous de lancer le mouvement.</p>';
+    return;
+  }
+  list.innerHTML = data.ideas.map(idea => `<article class="idea-card" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">✎</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">×</button></div></footer></article>`).join("");
+  list.querySelectorAll(".idea-edit").forEach(button => button.addEventListener("click", async event => {
+    const idea = data.ideas.find(item => item.id === event.target.closest(".idea-card").dataset.id);
+    const nextText = prompt("Modifier cette idée :", idea.text)?.trim();
+    if (!nextText || nextText === idea.text) return;
+    idea.text = nextText;
+    idea.author = currentUserName();
+    idea.createdAt = new Date().toISOString();
+    renderIdeas();
+    const synced = await saveData();
+    showToast(synced ? "Idée modifiée pour tout le monde" : "Idée modifiée sur cet appareil");
+  }));
+  list.querySelectorAll(".idea-delete").forEach(button => button.addEventListener("click", async event => {
+    const id = event.target.closest(".idea-card").dataset.id;
+    if (!confirm("Supprimer cette idée ?")) return;
+    data.ideas = data.ideas.filter(item => item.id !== id);
+    renderIdeas();
+    const synced = await saveData();
+    showToast(synced ? "Idée supprimée pour tout le monde" : "Idée supprimée sur cet appareil");
+  }));
 }
 
 function renderAssistanceContacts() {
@@ -273,6 +309,17 @@ document.querySelector("#checklistForm").addEventListener("submit", async event 
   renderChecklist();
   const synced = await saveData();
   showToast(synced ? "Ajouté à la liste partagée" : "Ajouté sur cet appareil");
+});
+document.querySelector("#ideaForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const input = document.querySelector("#ideaInput");
+  const text = input.value.trim().replace(/\s+/g, " ");
+  if (!text) return;
+  data.ideas.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, author: currentUserName(), createdAt: new Date().toISOString() });
+  input.value = "";
+  renderIdeas();
+  const synced = await saveData();
+  showToast(synced ? "Idée ajoutée pour tout le monde" : "Idée ajoutée sur cet appareil");
 });
 document.querySelector("#editButton").addEventListener("click", () => editing ? setEditing(false) : document.querySelector("#editDialog").showModal());
 document.querySelector("#toggleEdit").addEventListener("click", () => { document.querySelector("#editDialog").close(); setEditing(true); });
