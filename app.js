@@ -2,7 +2,7 @@ const initialData = {
   dataVersion: 3,
   activityVersion: 2,
   faqVersion: 3,
-  checklistVersion: 1,
+  checklistVersion: 2,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -26,15 +26,13 @@ const initialData = {
     ["✨", "Et plein d'autres…", "À découvrir ensemble"]
   ],
   checklist: [
-    { id: "clothes", text: "Vêtements pour la semaine", checked: false, author: "" },
-    { id: "sheets", text: "Draps, si on ne les loue pas", checked: false, author: "" },
-    { id: "towels", text: "Serviettes, si on ne les loue pas", checked: false, author: "" },
-    { id: "swimsuit", text: "Maillot de bain", checked: false, author: "" },
-    { id: "shoes", text: "Chaussures pour marcher", checked: false, author: "" },
-    { id: "toiletries", text: "Trousse de toilette", checked: false, author: "" },
-    { id: "medicine", text: "Médicaments personnels", checked: false, author: "" },
     { id: "games", text: "Jeux", checked: false, author: "" },
-    { id: "speaker", text: "Enceinte et chargeur", checked: false, author: "" }
+    { id: "speaker", text: "Enceinte et chargeur", checked: false, author: "" },
+    { id: "power-strip", text: "Multiprise", checked: false, author: "" },
+    { id: "cooler", text: "Glacière ou sacs isothermes", checked: false, author: "" },
+    { id: "first-aid", text: "Trousse de premiers secours", checked: false, author: "" },
+    { id: "outdoor-games", text: "Ballon ou jeux d'extérieur", checked: false, author: "" },
+    { id: "parasol", text: "Parasol", checked: false, author: "" }
   ],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -109,7 +107,12 @@ function normalizeData(source) {
   }
   if (source?.checklistVersion !== initialData.checklistVersion) {
     normalized.checklistVersion = initialData.checklistVersion;
-    normalized.checklist = structuredClone(initialData.checklist);
+    const existingItems = Array.isArray(source?.checklist) ? source.checklist : [];
+    const previousDefaultIds = new Set(["clothes", "sheets", "towels", "swimsuit", "shoes", "toiletries", "medicine", "games", "speaker"]);
+    const newDefaultIds = new Set(initialData.checklist.map(item => item.id));
+    const sharedDefaults = initialData.checklist.map(defaultItem => ({ ...defaultItem, ...existingItems.find(item => item.id === defaultItem.id) }));
+    const customItems = existingItems.filter(item => !previousDefaultIds.has(item.id) && !newDefaultIds.has(item.id));
+    normalized.checklist = [...sharedDefaults, ...customItems];
   }
   return normalized;
 }
