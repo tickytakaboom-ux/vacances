@@ -120,7 +120,8 @@ function updateBudget() {
   document.querySelector("#depositPerPerson").textContent = `${euro.format(275.70 / count)} / pers.`;
   document.querySelector("#depositCautionPerPerson").textContent = `${euro.format(200 / count)} / pers.`;
   document.querySelector("#statPeople").textContent = count;
-  document.querySelector("#statPrice").textContent = `${euro.format(budget.perPerson)} + ${euro.format(200 / count)}`;
+  const cautionPerPerson = 200 / count;
+  document.querySelector("#statPrice").textContent = `${euro.format(budget.perPerson)} + ${euro.format(cautionPerPerson)} = ${euro.format(budget.perPerson + cautionPerPerson)}`;
 }
 
 function updateCountdown() {
