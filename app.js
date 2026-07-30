@@ -3,6 +3,7 @@ const initialData = {
   activityVersion: 2,
   faqVersion: 3,
   checklistVersion: 3,
+  contactsVersion: 1,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -30,6 +31,10 @@ const initialData = {
     { id: "speaker", text: "Enceinte", checked: false, author: "" },
     { id: "cooler", text: "Glacière ou sacs isothermes", checked: false, author: "" },
     { id: "first-aid", text: "Trousse de premiers secours", checked: false, author: "" }
+  ],
+  assistanceContacts: [
+    { id: "car-1", vehicle: "Voiture 1", insurer: "", number: "", author: "" },
+    { id: "car-2", vehicle: "Voiture 2", insurer: "", number: "", author: "" }
   ],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -111,6 +116,10 @@ function normalizeData(source) {
     const customItems = existingItems.filter(item => !previousDefaultIds.has(item.id) && !newDefaultIds.has(item.id));
     normalized.checklist = [...sharedDefaults, ...customItems];
   }
+  if (source?.contactsVersion !== initialData.contactsVersion) {
+    normalized.contactsVersion = initialData.contactsVersion;
+    normalized.assistanceContacts = structuredClone(initialData.assistanceContacts);
+  }
   return normalized;
 }
 
@@ -133,7 +142,26 @@ function render() {
   document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
   renderChecklist();
+  renderAssistanceContacts();
   updateBudget();
+}
+
+function renderAssistanceContacts() {
+  const container = document.querySelector("#assistanceContacts");
+  container.innerHTML = data.assistanceContacts.map(contact => {
+    const phone = contact.number.replace(/[^+\d]/g, "");
+    return `<form class="assistance-card" data-id="${escapeHTML(contact.id)}"><span>${escapeHTML(contact.vehicle)}</span><label>Assurance<input name="insurer" maxlength="40" value="${escapeHTML(contact.insurer)}" placeholder="À compléter"></label><label>Numéro d'assistance<input name="number" inputmode="tel" maxlength="24" value="${escapeHTML(contact.number)}" placeholder="À compléter"></label><div><button type="submit">Enregistrer</button>${phone ? `<a href="tel:${escapeHTML(phone)}">Appeler</a>` : ""}</div>${contact.author ? `<small>Modifié par ${escapeHTML(contact.author)}</small>` : ""}</form>`;
+  }).join("");
+  container.querySelectorAll(".assistance-card").forEach(form => form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
+    contact.insurer = new FormData(form).get("insurer").trim();
+    contact.number = new FormData(form).get("number").trim();
+    contact.author = currentUserName();
+    renderAssistanceContacts();
+    const synced = await saveData();
+    showToast(synced ? "Assistance enregistrée pour tout le monde" : "Assistance sauvegardée sur cet appareil");
+  }));
 }
 
 function renderChecklist() {
