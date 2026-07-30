@@ -112,11 +112,13 @@ function render() {
 }
 
 function updateBudget() {
-  const count = document.querySelector("#peopleSelect").value;
+  const count = Number(document.querySelector("#peopleSelect").value);
   const budget = data.budgets[count];
   document.querySelector("#perPersonTotal").textContent = euro.format(budget.perPerson);
   document.querySelector("#groupTotal").textContent = `Total du groupe : ${euro.format(budget.total)}`;
   document.querySelector("#budgetList").innerHTML = budget.items.map(item => `<div class="budget-row"><span>${item[0]}</span><strong>${euro.format(item[1])} / pers.</strong></div>`).join("");
+  document.querySelector("#depositPerPerson").textContent = `${euro.format(275.70 / count)} / pers.`;
+  document.querySelector("#depositCautionPerPerson").textContent = `${euro.format(200 / count)} / pers.`;
 }
 
 function updateCountdown() {
