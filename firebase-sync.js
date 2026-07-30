@@ -42,7 +42,7 @@ async function writeSharedData(content) {
       ? ["text", "days", "activities", "budgets", "faqs"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
       : ["initialisation"];
     await setDoc(tripRef, {
-      content,
+      contentJson: JSON.stringify(content),
       updatedAt: serverTimestamp(),
       updatedByUid: user.uid,
       updatedByName: userName
@@ -51,7 +51,7 @@ async function writeSharedData(content) {
     setStatus("Synchronisé", "online");
     try {
       await addDoc(collection(db, "trips", "embrun-2027", "history"), {
-        content,
+        contentJson: JSON.stringify(content),
         changedSections,
         changedByUid: user.uid,
         changedByName: userName,
@@ -79,7 +79,14 @@ async function connect() {
     onSnapshot(tripRef, async snapshot => {
       if (snapshot.exists()) {
         const snapshotData = snapshot.data();
-        const remote = snapshotData.content;
+        let remote = null;
+        try {
+          remote = snapshotData.contentJson ? JSON.parse(snapshotData.contentJson) : snapshotData.content;
+        } catch (parseError) {
+          console.error("Firebase data parse failed", parseError);
+          setStatus("Données partagées illisibles", "error");
+          return;
+        }
         lastRemoteData = remote ? structuredClone(remote) : null;
         if (remote) window.dispatchEvent(new CustomEvent("shared-trip-data", { detail: remote }));
         const editor = snapshotData.updatedByName;
