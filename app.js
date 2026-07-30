@@ -119,6 +119,10 @@ function updateBudget() {
   document.querySelector("#budgetList").innerHTML = budget.items.map(item => `<div class="budget-row"><span>${item[0]}</span><strong>${euro.format(item[1])} / pers.</strong></div>`).join("");
   document.querySelector("#depositPerPerson").textContent = `${euro.format(275.70 / count)} / pers.`;
   document.querySelector("#depositCautionPerPerson").textContent = `${euro.format(200 / count)} / pers.`;
+  document.querySelector("#statDeposit").textContent = euro.format(275.70 / count);
+  document.querySelector("#statCaution").textContent = euro.format(200 / count);
+  document.querySelector("#statPeople").textContent = count;
+  document.querySelector("#statPrice").textContent = `≈ ${euro.format(budget.perPerson)}`;
 }
 
 function updateCountdown() {
