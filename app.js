@@ -3,6 +3,7 @@ const initialData = {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
   },
+  textAuthors: {},
   days: [
     ["Jour 1", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
     ["Jour 2", "Plan d'eau d'Embrun", "Baignade, paddle ou canoë, puis coucher de soleil au bord du lac."],
@@ -39,6 +40,7 @@ const nameKey = "zigotos-first-name-v1";
 let data = loadData();
 let editing = false;
 let editSnapshot = null;
+let editTextSnapshot = null;
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 function escapeHTML(value = "") {
@@ -60,14 +62,19 @@ function loadData() {
 }
 
 async function saveData() {
-  document.querySelectorAll(".editable[data-key]").forEach(el => data.text[el.dataset.key] = el.textContent.trim());
   localStorage.setItem(key, JSON.stringify(data));
   if (!window.saveSharedTrip) return false;
   return window.saveSharedTrip(structuredClone(data));
 }
 
 function render() {
-  document.querySelectorAll(".editable[data-key]").forEach(el => el.textContent = data.text[el.dataset.key]);
+  document.querySelectorAll(".text-editor").forEach(el => el.remove());
+  document.querySelectorAll(".editable[data-key]").forEach(el => {
+    const textKey = el.dataset.key;
+    el.textContent = data.text[textKey];
+    const author = data.textAuthors?.[textKey];
+    if (author) el.insertAdjacentHTML("afterend", `<span class="text-editor" title="Modifié par ${escapeHTML(author)}"><b>${escapeHTML(author.charAt(0).toUpperCase())}</b><span>${escapeHTML(author)}</span></span>`);
+  });
   document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${escapeHTML(d[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${i}">${escapeHTML(d[1])}</strong>${d[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(d[3])}"><b>${escapeHTML(d[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(d[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${i}">${escapeHTML(d[2])}</p></div></article>`).join("");
   document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${escapeHTML(a[0])}</span><div><strong>${escapeHTML(a[1])}</strong><small>${escapeHTML(a[2])}</small></div></article>`).join("");
   document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
@@ -85,13 +92,24 @@ function updateBudget() {
 
 async function setEditing(active) {
   editing = active;
-  if (active) editSnapshot = structuredClone(data.days);
+  if (active) {
+    editSnapshot = structuredClone(data.days);
+    editTextSnapshot = structuredClone(data.text);
+  }
   document.body.classList.toggle("editing", active);
   document.querySelector("#editButton").setAttribute("aria-pressed", String(active));
   document.querySelector("#editButton").innerHTML = active ? "✓ Terminer" : "<span aria-hidden=\"true\">✎</span> Modifier";
   document.querySelectorAll(".editable").forEach(el => el.contentEditable = active);
   document.querySelectorAll(".day-title,.day-copy").forEach(el => el.contentEditable = active);
   if (!active) {
+    document.querySelectorAll(".editable[data-key]").forEach(el => {
+      const textKey = el.dataset.key;
+      data.text[textKey] = el.textContent.trim();
+      if (editTextSnapshot && data.text[textKey] !== editTextSnapshot[textKey]) {
+        data.textAuthors ??= {};
+        data.textAuthors[textKey] = currentUserName();
+      }
+    });
     document.querySelectorAll(".day-title").forEach(el => data.days[el.dataset.index][1] = el.textContent.trim());
     document.querySelectorAll(".day-copy").forEach(el => data.days[el.dataset.index][2] = el.textContent.trim());
     data.days.forEach((day, index) => {
