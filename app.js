@@ -102,6 +102,21 @@ function updateBudget() {
   document.querySelector("#budgetList").innerHTML = budget.items.map(item => `<div class="budget-row"><span>${item[0]}</span><strong>${euro.format(item[1])} / pers.</strong></div>`).join("");
 }
 
+function updateCountdown() {
+  const departure = new Date("2027-07-03T00:00:00+02:00");
+  const remaining = departure.getTime() - Date.now();
+  if (remaining <= 0) {
+    document.querySelector("#countdown").innerHTML = "<strong class=\"countdown-live\">C'est parti !</strong>";
+    document.querySelector("#countdownNote").textContent = "Direction Embrun";
+    return;
+  }
+  const totalSeconds = Math.floor(remaining / 1000);
+  document.querySelector("#countdownDays").textContent = Math.floor(totalSeconds / 86400);
+  document.querySelector("#countdownHours").textContent = String(Math.floor(totalSeconds / 3600) % 24).padStart(2, "0");
+  document.querySelector("#countdownMinutes").textContent = String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0");
+  document.querySelector("#countdownSeconds").textContent = String(totalSeconds % 60).padStart(2, "0");
+}
+
 async function setEditing(active) {
   editing = active;
   if (active) {
@@ -191,6 +206,8 @@ window.addEventListener("shared-trip-data", event => {
 render();
 updateUserBadge(currentUserName());
 updateAdminControls();
+updateCountdown();
+setInterval(updateCountdown, 1000);
 
 if (!localStorage.getItem(nameKey)) {
   document.querySelector("#nameDialog").showModal();
