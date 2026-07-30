@@ -2,7 +2,7 @@ const initialData = {
   dataVersion: 3,
   activityVersion: 2,
   faqVersion: 3,
-  checklistVersion: 2,
+  checklistVersion: 3,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -27,12 +27,9 @@ const initialData = {
   ],
   checklist: [
     { id: "games", text: "Jeux", checked: false, author: "" },
-    { id: "speaker", text: "Enceinte et chargeur", checked: false, author: "" },
-    { id: "power-strip", text: "Multiprise", checked: false, author: "" },
+    { id: "speaker", text: "Enceinte", checked: false, author: "" },
     { id: "cooler", text: "Glacière ou sacs isothermes", checked: false, author: "" },
-    { id: "first-aid", text: "Trousse de premiers secours", checked: false, author: "" },
-    { id: "outdoor-games", text: "Ballon ou jeux d'extérieur", checked: false, author: "" },
-    { id: "parasol", text: "Parasol", checked: false, author: "" }
+    { id: "first-aid", text: "Trousse de premiers secours", checked: false, author: "" }
   ],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -108,7 +105,7 @@ function normalizeData(source) {
   if (source?.checklistVersion !== initialData.checklistVersion) {
     normalized.checklistVersion = initialData.checklistVersion;
     const existingItems = Array.isArray(source?.checklist) ? source.checklist : [];
-    const previousDefaultIds = new Set(["clothes", "sheets", "towels", "swimsuit", "shoes", "toiletries", "medicine", "games", "speaker"]);
+    const previousDefaultIds = new Set(["clothes", "sheets", "towels", "swimsuit", "shoes", "toiletries", "medicine", "games", "speaker", "power-strip", "cooler", "first-aid", "outdoor-games", "parasol"]);
     const newDefaultIds = new Set(initialData.checklist.map(item => item.id));
     const sharedDefaults = initialData.checklist.map(defaultItem => ({ ...defaultItem, ...existingItems.find(item => item.id === defaultItem.id) }));
     const customItems = existingItems.filter(item => !previousDefaultIds.has(item.id) && !newDefaultIds.has(item.id));
