@@ -155,10 +155,24 @@
     <a href="#liens"><span>↗</span>Liens</a>
   </nav>
 
+  <dialog id="nameDialog" class="welcome-dialog">
+    <form id="nameForm">
+      <div class="welcome-mark">Z</div>
+      <p class="eyebrow dark">Bienvenue dans le carnet</p>
+      <h3>Comment tu<br>t'appelles ?</h3>
+      <p>Ton prénom permettra au groupe de savoir qui a apporté les dernières modifications.</p>
+      <label>Ton prénom
+        <input id="firstName" name="firstName" type="text" minlength="2" maxlength="24" autocomplete="given-name" placeholder="Ex. Souhil" required>
+      </label>
+      <button class="button button-dark" type="submit">Rejoindre le voyage</button>
+    </form>
+  </dialog>
+
   <dialog id="editDialog">
     <form method="dialog">
       <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer">×</button></div>
       <p>Les changements sont enregistrés sur cet appareil et synchronisés avec le carnet partagé dès qu'une connexion est disponible.</p>
+      <p class="last-editor" id="lastEditor">Aucune modification partagée pour le moment.</p>
       <div class="dialog-actions">
         <button type="button" class="button button-dark" id="toggleEdit">Activer l'édition</button>
         <button type="button" class="button button-outline" id="exportData">Exporter les changements</button>

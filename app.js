@@ -35,6 +35,7 @@ const initialData = {
 };
 
 const key = "zigotos-embrun-data-v1";
+const nameKey = "zigotos-first-name-v1";
 let data = loadData();
 let editing = false;
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
@@ -101,6 +102,16 @@ document.querySelector("#resetData").addEventListener("click", () => {
   if (confirm("Restaurer la version initiale pour tout le monde ?")) { data = structuredClone(initialData); saveData(); render(); document.querySelector("#editDialog").close(); showToast("Version initiale restaurée et synchronisée"); }
 });
 
+document.querySelector("#nameForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const name = document.querySelector("#firstName").value.trim().replace(/\s+/g, " ");
+  if (name.length < 2) return;
+  localStorage.setItem(nameKey, name);
+  document.querySelector("#nameDialog").close();
+  window.dispatchEvent(new CustomEvent("trip-user-ready", { detail: name }));
+  showToast(`Bienvenue ${name} !`);
+});
+
 window.getTripData = () => structuredClone(data);
 window.addEventListener("shared-trip-data", event => {
   data = { ...structuredClone(initialData), ...event.detail };
@@ -109,3 +120,9 @@ window.addEventListener("shared-trip-data", event => {
 });
 
 render();
+
+if (!localStorage.getItem(nameKey)) {
+  document.querySelector("#nameDialog").showModal();
+} else {
+  window.dispatchEvent(new CustomEvent("trip-user-ready", { detail: localStorage.getItem(nameKey) }));
+}

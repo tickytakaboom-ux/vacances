@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, collection, addDoc, onSnapshot, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCuQZUhTfJhpf33JioWKdrgp8YwuY18e2Y",
@@ -21,6 +21,8 @@ const tripRef = doc(db, "trips", "embrun-2027");
 let user = null;
 let saveTimer = null;
 let pendingData = null;
+let userName = localStorage.getItem("zigotos-first-name-v1") || "";
+let lastRemoteData = null;
 
 function setStatus(label, state = "") {
   statusText.textContent = label;
@@ -30,18 +32,30 @@ function setStatus(label, state = "") {
 }
 
 async function writeSharedData(content) {
-  if (!user) {
+  if (!user || !userName) {
     pendingData = content;
     setStatus("En attente de connexion");
     return;
   }
   setStatus("Synchronisation…");
   try {
+    const changedSections = lastRemoteData
+      ? ["text", "days", "activities", "budgets", "faqs"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
+      : ["initialisation"];
     await setDoc(tripRef, {
       content,
       updatedAt: serverTimestamp(),
-      updatedBy: user.uid
+      updatedByUid: user.uid,
+      updatedByName: userName
     });
+    await addDoc(collection(db, "trips", "embrun-2027", "history"), {
+      content,
+      changedSections,
+      changedByUid: user.uid,
+      changedByName: userName,
+      changedAt: serverTimestamp()
+    });
+    lastRemoteData = structuredClone(content);
     setStatus("Synchronisé", "online");
   } catch (error) {
     console.error("Firebase save failed", error);
@@ -67,8 +81,13 @@ async function connect() {
     user = credential.user;
     onSnapshot(tripRef, async snapshot => {
       if (snapshot.exists()) {
-        const remote = snapshot.data().content;
+        const snapshotData = snapshot.data();
+        const remote = snapshotData.content;
+        lastRemoteData = remote ? structuredClone(remote) : null;
         if (remote) window.dispatchEvent(new CustomEvent("shared-trip-data", { detail: remote }));
+        const editor = snapshotData.updatedByName;
+        const editorLabel = document.querySelector("#lastEditor");
+        if (editor) editorLabel.textContent = `Dernière modification partagée par ${editor}.`;
         setStatus(snapshot.metadata.hasPendingWrites ? "Synchronisation…" : "Synchronisé", snapshot.metadata.hasPendingWrites ? "" : "online");
       } else {
         await writeSharedData(window.getTripData());
@@ -88,4 +107,9 @@ async function connect() {
   }
 }
 
-connect();
+window.addEventListener("trip-user-ready", event => {
+  userName = event.detail;
+  if (!user) connect();
+});
+
+if (userName) connect();

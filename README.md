@@ -22,4 +22,4 @@ Le bouton **Modifier** permet de changer le texte du programme et certaines pré
 - Copier le contenu de `firestore.rules` dans l'onglet **Rules** de Firestore, puis publier les règles.
 - Ajouter le domaine GitHub Pages dans **Authentication > Settings > Authorized domains** si Firebase ne l'accepte pas automatiquement.
 
-Les visiteurs sont connectés anonymement : aucun compte ni mot de passe n'est demandé. Toute personne ayant accès au site peut donc modifier le carnet.
+Les visiteurs choisissent leur prénom au premier passage, puis sont connectés anonymement : aucun compte ni mot de passe n'est demandé. Chaque sauvegarde conserve le prénom, les sections modifiées et une copie du contenu dans la sous-collection Firestore `history`. Toute personne ayant accès au site peut modifier le carnet.
