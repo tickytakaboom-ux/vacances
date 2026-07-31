@@ -74,7 +74,7 @@ let pageLoaded = document.readyState === "complete";
 let syncReady = !currentUserName();
 let loaderHidden = false;
 const loaderStartedAt = performance.now();
-const minimumLoaderDuration = 1300;
+const minimumLoaderDuration = 800;
 
 function hideSiteLoader() {
   if (loaderHidden) return;
