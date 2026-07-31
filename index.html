@@ -12,9 +12,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260731-2">
+  <link rel="stylesheet" href="styles.css?v=20260731-3">
 </head>
 <body>
+  <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
+    <div class="loader-logo"><img src="assets/icon-192.png" alt=""></div>
+    <strong>Les Zigotos</strong>
+    <span>Préparation du carnet partagé…</span>
+    <i aria-hidden="true"></i>
+  </div>
   <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="#accueil" aria-label="Retour à l'accueil">
@@ -283,7 +289,7 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="app.js"></script>
-  <script type="module" src="firebase-sync.js"></script>
+  <script src="app.js?v=20260731-1"></script>
+  <script type="module" src="firebase-sync.js?v=20260731-1"></script>
 </body>
 </html>

@@ -30,6 +30,7 @@ function setStatus(label, state = "") {
   userChip.title = label;
   syncLabel.textContent = label;
   syncLabel.classList.toggle("error", state === "error");
+  if (state === "online" || state === "error") window.dispatchEvent(new Event("trip-sync-ready"));
   if (state === "error") document.querySelector("#lastEditor").textContent = "Firebase n'est pas connecté : les changements restent uniquement sur cet appareil.";
 }
 

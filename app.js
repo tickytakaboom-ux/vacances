@@ -70,6 +70,25 @@ let showAllIdeas = false;
 let showAllFaqs = false;
 const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+let pageLoaded = document.readyState === "complete";
+let syncReady = !currentUserName();
+let loaderHidden = false;
+
+function hideSiteLoader() {
+  if (loaderHidden) return;
+  loaderHidden = true;
+  const loader = document.querySelector("#siteLoader");
+  loader.classList.add("leaving");
+  setTimeout(() => loader.remove(), 500);
+}
+
+function finishLoadingWhenReady() {
+  if (pageLoaded && syncReady) setTimeout(hideSiteLoader, 450);
+}
+
+window.addEventListener("load", () => { pageLoaded = true; finishLoadingWhenReady(); });
+window.addEventListener("trip-sync-ready", () => { syncReady = true; finishLoadingWhenReady(); });
+setTimeout(hideSiteLoader, 2500);
 
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
