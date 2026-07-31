@@ -74,7 +74,7 @@ let pageLoaded = document.readyState === "complete";
 let syncReady = !currentUserName();
 let loaderHidden = false;
 const loaderStartedAt = performance.now();
-const minimumLoaderDuration = 800;
+const minimumLoaderDuration = 500;
 
 function hideSiteLoader() {
   if (loaderHidden) return;
@@ -86,7 +86,7 @@ function hideSiteLoader() {
   loaderHidden = true;
   const loader = document.querySelector("#siteLoader");
   loader.classList.add("leaving");
-  setTimeout(() => loader.remove(), 500);
+  setTimeout(() => loader.remove(), 280);
 }
 
 function finishLoadingWhenReady() {
