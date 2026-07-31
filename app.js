@@ -73,9 +73,16 @@ const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR"
 let pageLoaded = document.readyState === "complete";
 let syncReady = !currentUserName();
 let loaderHidden = false;
+const loaderStartedAt = performance.now();
+const minimumLoaderDuration = 1300;
 
 function hideSiteLoader() {
   if (loaderHidden) return;
+  const remaining = minimumLoaderDuration - (performance.now() - loaderStartedAt);
+  if (remaining > 0) {
+    setTimeout(hideSiteLoader, remaining);
+    return;
+  }
   loaderHidden = true;
   const loader = document.querySelector("#siteLoader");
   loader.classList.add("leaving");
