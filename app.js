@@ -60,11 +60,15 @@ const initialData = {
 const key = "zigotos-embrun-data-v1";
 const nameKey = "zigotos-first-name-v1";
 const adminKey = "zigotos-admin-v1";
+const lastVisitKey = "zigotos-last-visit-v1";
 const adminCodeHash = "a8f5c8afb801ba1992ca7ccb79908e1d78c493a0f03cbe310c6b561f9d4647f5";
 let data = loadData();
 let editing = false;
 let editSnapshot = null;
 let editTextSnapshot = null;
+let showAllIdeas = false;
+let showAllFaqs = false;
+const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 function escapeHTML(value = "") {
@@ -145,22 +149,32 @@ function render() {
   });
   document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${escapeHTML(d[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${i}">${escapeHTML(d[1])}</strong>${d[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(d[3])}"><b>${escapeHTML(d[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(d[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${i}">${escapeHTML(d[2])}</p></div></article>`).join("");
   document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${escapeHTML(a[0])}</span><div><strong>${escapeHTML(a[1])}</strong><small>${escapeHTML(a[2])}</small></div></article>`).join("");
-  document.querySelector("#faqList").innerHTML = data.faqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
+  const displayedFaqs = showAllFaqs ? data.faqs : data.faqs.slice(0, 5);
+  document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
+  const faqShowAll = document.querySelector("#faqShowAll");
+  faqShowAll.hidden = data.faqs.length <= 5;
+  faqShowAll.textContent = showAllFaqs ? "Réduire la liste" : `Voir les ${data.faqs.length} questions`;
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
   renderChecklist();
   renderAssistanceContacts();
   renderIdeas();
   updateBudget();
+  setupRevealAnimations();
 }
 
 function renderIdeas() {
   const list = document.querySelector("#ideasList");
+  document.querySelector("#ideasShowAll").hidden = true;
   document.querySelector("#ideasCount").textContent = `${data.ideas.length} idée${data.ideas.length > 1 ? "s" : ""}`;
   if (!data.ideas.length) {
     list.innerHTML = '<p class="ideas-empty">Aucune idée pour l’instant. À vous de lancer le mouvement.</p>';
     return;
   }
-  list.innerHTML = data.ideas.map(idea => `<article class="idea-card" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">✎</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">×</button></div></footer></article>`).join("");
+  const displayedIdeas = showAllIdeas ? data.ideas : data.ideas.slice(0, 4);
+  const ideasShowAll = document.querySelector("#ideasShowAll");
+  ideasShowAll.hidden = data.ideas.length <= 4;
+  ideasShowAll.textContent = showAllIdeas ? "Réduire la liste" : `Voir les ${data.ideas.length} idées`;
+  list.innerHTML = displayedIdeas.map(idea => `<article class="idea-card${new Date(idea.createdAt).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">✎</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">×</button></div></footer></article>`).join("");
   list.querySelectorAll(".idea-edit").forEach(button => button.addEventListener("click", async event => {
     const idea = data.ideas.find(item => item.id === event.target.closest(".idea-card").dataset.id);
     const nextText = prompt("Modifier cette idée :", idea.text)?.trim();
@@ -204,11 +218,12 @@ function renderChecklist() {
   const list = document.querySelector("#checklistList");
   const completed = data.checklist.filter(item => item.checked).length;
   document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
-  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}${new Date(item.updatedAt || 0).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", async event => {
     const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     item.checked = event.target.checked;
     item.author = currentUserName();
+    item.updatedAt = new Date().toISOString();
     renderChecklist();
     const synced = await saveData();
     showToast(synced ? "Check-list partagée" : "Check-list sauvegardée sur cet appareil");
@@ -219,6 +234,7 @@ function renderChecklist() {
     if (!nextText || nextText === item.text) return;
     item.text = nextText;
     item.author = currentUserName();
+    item.updatedAt = new Date().toISOString();
     renderChecklist();
     const synced = await saveData();
     showToast(synced ? "Élément modifié pour tout le monde" : "Modification sauvegardée sur cet appareil");
@@ -298,7 +314,42 @@ function showToast(message) {
   clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
+let revealObserver = null;
+function setupRevealAnimations() {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  revealObserver ??= new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("revealed");
+    revealObserver.unobserve(entry.target);
+  }), { rootMargin: "0px 0px -8%", threshold: .08 });
+  document.querySelectorAll(".stat-card,.day,.activity-card,.idea-card,.payment-card,.checklist-card,.contact-featured,.emergency-grid a,.assistance-card,.link-grid a").forEach(element => {
+    if (element.classList.contains("reveal-ready")) return;
+    element.classList.add("reveal-ready");
+    revealObserver.observe(element);
+  });
+}
+
+function hasUnsavedDrafts() {
+  if (editing) return true;
+  if (document.querySelector("#ideaInput").value.trim() || document.querySelector("#checklistInput").value.trim()) return true;
+  return [...document.querySelectorAll(".assistance-card")].some(form => {
+    const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
+    if (!contact) return false;
+    return form.elements.insurer.value.trim() !== contact.insurer || form.elements.number.value.trim() !== contact.number;
+  });
+}
+
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
+document.querySelector("#ideasShowAll").addEventListener("click", () => { showAllIdeas = !showAllIdeas; renderIdeas(); setupRevealAnimations(); });
+document.querySelector("#faqShowAll").addEventListener("click", () => { showAllFaqs = !showAllFaqs; render(); });
+document.querySelector("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+window.addEventListener("scroll", () => document.querySelector("#backToTop").classList.toggle("visible", scrollY > 700), { passive: true });
+window.addEventListener("beforeunload", event => {
+  if (!hasUnsavedDrafts()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
+window.addEventListener("pagehide", () => localStorage.setItem(lastVisitKey, String(Date.now())));
 const navigationLinks = [...document.querySelectorAll(".section-nav a,.mobile-nav a")];
 const observedSections = [...document.querySelectorAll("main section[id]")];
 if ("IntersectionObserver" in window) {
@@ -318,7 +369,7 @@ document.querySelector("#checklistForm").addEventListener("submit", async event 
   const input = document.querySelector("#checklistInput");
   const text = input.value.trim().replace(/\s+/g, " ");
   if (!text) return;
-  data.checklist.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, checked: false, author: currentUserName() });
+  data.checklist.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, checked: false, author: currentUserName(), updatedAt: new Date().toISOString() });
   input.value = "";
   renderChecklist();
   const synced = await saveData();

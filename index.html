@@ -26,6 +26,7 @@
         <span class="user-avatar" id="userInitial">?</span>
         <span id="userName">Invité</span>
         <i class="sync-dot" id="syncDot"></i>
+        <span class="sync-label" id="syncLabel">Connexion…</span>
       </span>
       <button class="edit-button" id="editButton" type="button" aria-pressed="false">
         <span aria-hidden="true">✎</span> Modifier
@@ -119,6 +120,7 @@
         <button type="submit">Ajouter l'idée +</button>
       </form>
       <div class="ideas-list" id="ideasList"></div>
+      <button class="show-more" id="ideasShowAll" type="button" hidden>Voir toutes les idées</button>
     </section>
 
     <section class="section" id="budget">
@@ -239,6 +241,7 @@
     <section class="section faq-section" id="infos">
       <div class="section-heading"><p class="eyebrow dark">Questions pratiques</p><h2>On anticipe<br>comme L.</h2></div>
       <div class="faq-list" id="faqList"></div>
+      <button class="show-more" id="faqShowAll" type="button">Voir toutes les questions</button>
     </section>
   </main>
 
@@ -253,6 +256,7 @@
     <a href="#budget"><span>€</span>Budget</a>
     <a href="#liens"><span>↗</span>Liens</a>
   </nav>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="Retour en haut">↑</button>
 
   <dialog id="nameDialog" class="welcome-dialog">
     <form id="nameForm">

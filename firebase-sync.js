@@ -14,6 +14,7 @@ const firebaseConfig = {
 
 const userChip = document.querySelector("#userChip");
 const syncDot = document.querySelector("#syncDot");
+const syncLabel = document.querySelector("#syncLabel");
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -27,6 +28,8 @@ function setStatus(label, state = "") {
   syncDot.classList.remove("online", "error");
   if (state) syncDot.classList.add(state);
   userChip.title = label;
+  syncLabel.textContent = label;
+  syncLabel.classList.toggle("error", state === "error");
   if (state === "error") document.querySelector("#lastEditor").textContent = "Firebase n'est pas connecté : les changements restent uniquement sur cet appareil.";
 }
 
@@ -39,7 +42,7 @@ async function writeSharedData(content) {
   setStatus("Synchronisation…");
   try {
     const changedSections = lastRemoteData
-      ? ["text", "days", "activities", "budgets", "faqs"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
+      ? ["text", "days", "activities", "budgets", "faqs", "checklist", "ideas", "assistanceContacts"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
       : ["initialisation"];
     await setDoc(tripRef, {
       contentJson: JSON.stringify(content),
