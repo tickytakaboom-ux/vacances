@@ -5,6 +5,7 @@ const initialData = {
   checklistVersion: 3,
   contactsVersion: 1,
   ideasVersion: 1,
+  shoppingVersion: 1,
   text: {
     intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
@@ -38,6 +39,7 @@ const initialData = {
     { id: "car-2", vehicle: "Voiture 2", insurer: "", number: "", author: "" }
   ],
   ideas: [],
+  shopping: [],
   budgets: {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "5": { total: 1912.10, perPerson: 382.42, items: [["Chalet", 188.42], ["Essence", 36], ["Péage", 18], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
@@ -61,11 +63,15 @@ const key = "zigotos-embrun-data-v1";
 const nameKey = "zigotos-first-name-v1";
 const adminKey = "zigotos-admin-v1";
 const lastVisitKey = "zigotos-last-visit-v1";
+const personalChecklistKey = "zigotos-personal-checklist-v1";
+const listTabKey = "zigotos-list-tab-v1";
 const adminCodeHash = "a8f5c8afb801ba1992ca7ccb79908e1d78c493a0f03cbe310c6b561f9d4647f5";
 let data = loadData();
 let editing = false;
 let editSnapshot = null;
 let editTextSnapshot = null;
+let activeListTab = localStorage.getItem(listTabKey) || "shared";
+let personalChecklist = loadPersonalChecklist();
 let showAllIdeas = false;
 let showAllFaqs = false;
 const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
@@ -103,6 +109,17 @@ function escapeHTML(value = "") {
 
 function currentUserName() {
   return localStorage.getItem(nameKey) || "";
+}
+
+function loadPersonalChecklist() {
+  const defaults = ["Vêtements", "Sous-vêtements", "Maillot de bain", "Trousse de toilette", "Médicaments", "Chargeurs", "Papiers d'identité", "Chaussures", "Serviettes"]
+    .map((text, index) => ({ id: `personal-${index}`, text, checked: false }));
+  try { return JSON.parse(localStorage.getItem(personalChecklistKey)) || defaults; }
+  catch { return defaults; }
+}
+
+function savePersonalChecklist() {
+  localStorage.setItem(personalChecklistKey, JSON.stringify(personalChecklist));
 }
 
 function updateUserBadge(name) {
@@ -156,6 +173,10 @@ function normalizeData(source) {
     normalized.ideasVersion = initialData.ideasVersion;
     normalized.ideas = Array.isArray(source?.ideas) ? source.ideas : [];
   }
+  if (source?.shoppingVersion !== initialData.shoppingVersion) {
+    normalized.shoppingVersion = initialData.shoppingVersion;
+    normalized.shopping = Array.isArray(source?.shopping) ? source.shopping : [];
+  }
   return normalized;
 }
 
@@ -182,6 +203,9 @@ function render() {
   faqShowAll.textContent = showAllFaqs ? "Réduire la liste" : `Voir les ${data.faqs.length} questions`;
   document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
   renderChecklist();
+  renderPersonalChecklist();
+  renderShoppingList();
+  updateListTabs();
   renderAssistanceContacts();
   renderIdeas();
   updateBudget();
@@ -243,7 +267,7 @@ function renderAssistanceContacts() {
 function renderChecklist() {
   const list = document.querySelector("#checklistList");
   const completed = data.checklist.filter(item => item.checked).length;
-  document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
+  if (activeListTab === "shared") document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
   list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}${new Date(item.updatedAt || 0).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", async event => {
     const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
@@ -274,6 +298,86 @@ function renderChecklist() {
     const synced = await saveData();
     showToast(synced ? "Élément supprimé pour tout le monde" : "Suppression sauvegardée sur cet appareil");
   }));
+}
+
+function renderPersonalChecklist() {
+  const list = document.querySelector("#personalList");
+  const completed = personalChecklist.filter(item => item.checked).length;
+  if (activeListTab === "personal") document.querySelector("#checklistProgress").textContent = `${completed} / ${personalChecklist.length} dans ma valise`;
+  list.innerHTML = personalChecklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label><button class="personal-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="personal-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", event => {
+    const item = personalChecklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
+    item.checked = event.target.checked;
+    savePersonalChecklist();
+    renderPersonalChecklist();
+  }));
+  list.querySelectorAll(".personal-edit").forEach(button => button.addEventListener("click", event => {
+    const item = personalChecklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
+    const nextText = prompt("Modifier cet élément personnel :", item.text)?.trim();
+    if (!nextText || nextText === item.text) return;
+    item.text = nextText;
+    savePersonalChecklist();
+    renderPersonalChecklist();
+  }));
+  list.querySelectorAll(".personal-delete").forEach(button => button.addEventListener("click", event => {
+    const id = event.target.closest(".checklist-item").dataset.id;
+    personalChecklist = personalChecklist.filter(item => item.id !== id);
+    savePersonalChecklist();
+    renderPersonalChecklist();
+  }));
+}
+
+function renderShoppingList() {
+  const list = document.querySelector("#shoppingList");
+  const completed = data.shopping.filter(item => item.done).length;
+  if (activeListTab === "shopping") document.querySelector("#checklistProgress").textContent = `${completed} / ${data.shopping.length} réglé${completed > 1 ? "s" : ""}`;
+  if (!data.shopping.length) {
+    list.innerHTML = '<p class="list-empty">La liste des courses est vide pour l’instant.</p>';
+    return;
+  }
+  list.innerHTML = data.shopping.map(item => `<article class="shopping-item${item.done ? " done" : ""}" data-id="${escapeHTML(item.id)}"><label class="shopping-done"><input type="checkbox" ${item.done ? "checked" : ""}><span class="check-mark">✓</span><strong>${escapeHTML(item.text)}</strong></label><div class="shopping-choice" role="group" aria-label="Décision pour ${escapeHTML(item.text)}"><button type="button" data-decision="bring" class="${item.decision === "bring" ? "selected" : ""}">On apporte</button><button type="button" data-decision="buy" class="${item.decision === "buy" ? "selected" : ""}">On achète</button></div>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="shopping-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="shopping-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.querySelectorAll(".shopping-done input").forEach(input => input.addEventListener("change", async event => {
+    const item = data.shopping.find(entry => entry.id === event.target.closest(".shopping-item").dataset.id);
+    item.done = event.target.checked;
+    item.author = currentUserName();
+    item.updatedAt = new Date().toISOString();
+    renderShoppingList();
+    await saveData();
+  }));
+  list.querySelectorAll(".shopping-choice button").forEach(button => button.addEventListener("click", async event => {
+    const item = data.shopping.find(entry => entry.id === event.target.closest(".shopping-item").dataset.id);
+    item.decision = item.decision === button.dataset.decision ? "undecided" : button.dataset.decision;
+    item.author = currentUserName();
+    item.updatedAt = new Date().toISOString();
+    renderShoppingList();
+    const synced = await saveData();
+    showToast(synced ? "Décision partagée" : "Décision sauvegardée sur cet appareil");
+  }));
+  list.querySelectorAll(".shopping-edit").forEach(button => button.addEventListener("click", async event => {
+    const item = data.shopping.find(entry => entry.id === event.target.closest(".shopping-item").dataset.id);
+    const nextText = prompt("Modifier ce produit :", item.text)?.trim();
+    if (!nextText || nextText === item.text) return;
+    item.text = nextText;
+    item.author = currentUserName();
+    renderShoppingList();
+    await saveData();
+  }));
+  list.querySelectorAll(".shopping-delete").forEach(button => button.addEventListener("click", async event => {
+    const id = event.target.closest(".shopping-item").dataset.id;
+    if (!confirm("Supprimer ce produit de la liste ?")) return;
+    data.shopping = data.shopping.filter(item => item.id !== id);
+    renderShoppingList();
+    await saveData();
+  }));
+}
+
+function updateListTabs() {
+  document.querySelectorAll(".list-tab").forEach(button => {
+    const active = button.dataset.tab === activeListTab;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll(".list-panel").forEach(panel => panel.hidden = panel.dataset.panel !== activeListTab);
 }
 
 function updateBudget() {
@@ -357,7 +461,7 @@ function setupRevealAnimations() {
 
 function hasUnsavedDrafts() {
   if (editing) return true;
-  if (document.querySelector("#ideaInput").value.trim() || document.querySelector("#checklistInput").value.trim()) return true;
+  if (["#ideaInput", "#checklistInput", "#personalInput", "#shoppingInput"].some(selector => document.querySelector(selector).value.trim())) return true;
   return [...document.querySelectorAll(".assistance-card")].some(form => {
     const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
     if (!contact) return false;
@@ -400,6 +504,36 @@ document.querySelector("#checklistForm").addEventListener("submit", async event 
   renderChecklist();
   const synced = await saveData();
   showToast(synced ? "Ajouté à la liste partagée" : "Ajouté sur cet appareil");
+});
+document.querySelectorAll(".list-tab").forEach(button => button.addEventListener("click", () => {
+  activeListTab = button.dataset.tab;
+  localStorage.setItem(listTabKey, activeListTab);
+  updateListTabs();
+  renderChecklist();
+  renderPersonalChecklist();
+  renderShoppingList();
+}));
+document.querySelector("#personalForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const input = document.querySelector("#personalInput");
+  const text = input.value.trim().replace(/\s+/g, " ");
+  if (!text) return;
+  personalChecklist.push({ id: `personal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, checked: false });
+  input.value = "";
+  savePersonalChecklist();
+  renderPersonalChecklist();
+  showToast("Ajouté à ta valise sur cet appareil");
+});
+document.querySelector("#shoppingForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const input = document.querySelector("#shoppingInput");
+  const text = input.value.trim().replace(/\s+/g, " ");
+  if (!text) return;
+  data.shopping.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, decision: "undecided", done: false, author: currentUserName(), updatedAt: new Date().toISOString() });
+  input.value = "";
+  renderShoppingList();
+  const synced = await saveData();
+  showToast(synced ? "Produit ajouté pour tout le monde" : "Produit sauvegardé sur cet appareil");
 });
 document.querySelector("#ideaForm").addEventListener("submit", async event => {
   event.preventDefault();

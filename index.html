@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260731-4">
+  <link rel="stylesheet" href="styles.css?v=20260801-1">
 </head>
 <body>
   <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
@@ -181,11 +181,35 @@
         <span id="checklistProgress">0 / 4 préparé</span>
       </div>
       <div class="checklist-card">
-        <form id="checklistForm" class="checklist-form">
-          <label for="checklistInput">Ajouter quelque chose</label>
-          <div><input id="checklistInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
-        </form>
-        <div class="checklist-list" id="checklistList"></div>
+        <div class="list-tabs" role="tablist" aria-label="Choisir une liste">
+          <button class="list-tab active" type="button" role="tab" data-tab="shared">Matériel commun</button>
+          <button class="list-tab" type="button" role="tab" data-tab="personal">Ma valise</button>
+          <button class="list-tab" type="button" role="tab" data-tab="shopping">Courses</button>
+        </div>
+        <div class="list-panel" data-panel="shared">
+          <p class="list-note">Cette liste et ses coches sont partagées avec tout le groupe.</p>
+          <form id="checklistForm" class="checklist-form">
+            <label for="checklistInput">Ajouter du matériel commun</label>
+            <div><input id="checklistInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+          </form>
+          <div class="checklist-list" id="checklistList"></div>
+        </div>
+        <div class="list-panel" data-panel="personal" hidden>
+          <p class="list-note private-note">Cette liste reste uniquement sur cet appareil. Personne d'autre ne voit tes affaires ni tes coches.</p>
+          <form id="personalForm" class="checklist-form">
+            <label for="personalInput">Ajouter dans ma valise</label>
+            <div><input id="personalInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+          </form>
+          <div class="checklist-list personal-list" id="personalList"></div>
+        </div>
+        <div class="list-panel" data-panel="shopping" hidden>
+          <p class="list-note">Ajoutez d'abord les produits, puis décidez ensemble s'il faut les apporter ou les acheter sur place.</p>
+          <form id="shoppingForm" class="checklist-form">
+            <label for="shoppingInput">Ajouter un produit</label>
+            <div><input id="shoppingInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+          </form>
+          <div class="shopping-list" id="shoppingList"></div>
+        </div>
       </div>
     </section>
 
@@ -289,7 +313,7 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="app.js?v=20260731-4"></script>
-  <script type="module" src="firebase-sync.js?v=20260731-1"></script>
+  <script src="app.js?v=20260801-1"></script>
+  <script type="module" src="firebase-sync.js?v=20260801-1"></script>
 </body>
 </html>
