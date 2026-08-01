@@ -64,6 +64,7 @@ const nameKey = "zigotos-first-name-v1";
 const adminKey = "zigotos-admin-v1";
 const lastVisitKey = "zigotos-last-visit-v1";
 const personalChecklistKey = "zigotos-personal-checklist-v1";
+const personalChecklistVersionKey = "zigotos-personal-checklist-version";
 const listTabKey = "zigotos-list-tab-v1";
 const adminCodeHash = "a8f5c8afb801ba1992ca7ccb79908e1d78c493a0f03cbe310c6b561f9d4647f5";
 let data = loadData();
@@ -112,9 +113,25 @@ function currentUserName() {
 }
 
 function loadPersonalChecklist() {
-  const defaults = ["Vêtements", "Sous-vêtements", "Maillot de bain", "Trousse de toilette", "Médicaments", "Chargeurs", "Papiers d'identité", "Chaussures", "Serviettes"]
+  const newEssentials = ["Coupe-vent", "Claquettes / tongs", "Lunettes de soleil", "Casquette", "Gourde", "Crème solaire", "Anti-moustiques", "Baume à lèvres", "Batterie externe"];
+  const defaults = ["Vêtements", "Sous-vêtements", "Maillot de bain", "Trousse de toilette", "Médicaments", "Chargeur", "Papiers d'identité", "Chaussures", "Serviettes", ...newEssentials]
     .map((text, index) => ({ id: `personal-${index}`, text, checked: false }));
-  try { return JSON.parse(localStorage.getItem(personalChecklistKey)) || defaults; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(personalChecklistKey));
+    if (!Array.isArray(saved)) return defaults;
+    if (localStorage.getItem(personalChecklistVersionKey) !== "2") {
+      const normalizedTexts = saved.map(item => item.text.toLocaleLowerCase("fr").replace(/[\s/-]+/g, " ").trim());
+      newEssentials.forEach((text, index) => {
+        const normalizedText = text.toLocaleLowerCase("fr").replace(/[\s/-]+/g, " ").trim();
+        if (!normalizedTexts.includes(normalizedText)) saved.push({ id: `personal-new-${index}-${Date.now()}`, text, checked: false });
+      });
+      const hasCharger = normalizedTexts.some(text => text === "chargeur" || text === "chargeurs");
+      if (!hasCharger) saved.push({ id: `personal-new-charger-${Date.now()}`, text: "Chargeur", checked: false });
+      localStorage.setItem(personalChecklistKey, JSON.stringify(saved));
+      localStorage.setItem(personalChecklistVersionKey, "2");
+    }
+    return saved;
+  }
   catch { return defaults; }
 }
 
