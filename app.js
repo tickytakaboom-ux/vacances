@@ -4,6 +4,7 @@ const initialData = {
   faqVersion: 3,
   checklistVersion: 3,
   contactsVersion: 1,
+  transportVersion: 1,
   ideasVersion: 1,
   shoppingVersion: 1,
   text: {
@@ -37,6 +38,10 @@ const initialData = {
   assistanceContacts: [
     { id: "car-1", vehicle: "Voiture 1", insurer: "", number: "", author: "" },
     { id: "car-2", vehicle: "Voiture 2", insurer: "", number: "", author: "" }
+  ],
+  transport: [
+    { id: "trip-car-1", vehicle: "Voiture 1 · 3 personnes", driver: "", passengers: "", author: "" },
+    { id: "trip-car-2", vehicle: "Voiture 2 · 4 personnes", driver: "", passengers: "", author: "" }
   ],
   ideas: [],
   shopping: [],
@@ -188,6 +193,11 @@ function normalizeData(source) {
     normalized.contactsVersion = initialData.contactsVersion;
     normalized.assistanceContacts = structuredClone(initialData.assistanceContacts);
   }
+  if (source?.transportVersion !== initialData.transportVersion) {
+    normalized.transportVersion = initialData.transportVersion;
+    normalized.transport = structuredClone(initialData.transport);
+  }
+  normalized.days = normalized.days.map(day => [day[0], day[1], day[2], day[3] || "", day[4] || ""]);
   if (source?.ideasVersion !== initialData.ideasVersion) {
     normalized.ideasVersion = initialData.ideasVersion;
     normalized.ideas = Array.isArray(source?.ideas) ? source.ideas : [];
@@ -213,7 +223,7 @@ function render() {
     const author = data.textAuthors?.[textKey];
     if (author) el.insertAdjacentHTML("afterend", `<span class="text-editor" title="Modifié par ${escapeHTML(author)}"><b>${escapeHTML(author.charAt(0).toUpperCase())}</b><span>${escapeHTML(author)}</span></span>`);
   });
-  document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${escapeHTML(d[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${i}">${escapeHTML(d[1])}</strong>${d[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(d[3])}"><b>${escapeHTML(d[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(d[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${i}">${escapeHTML(d[2])}</p></div></article>`).join("");
+  renderTimeline();
   renderActivities();
   const displayedFaqs = showAllFaqs ? data.faqs : data.faqs.slice(0, 5);
   document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
@@ -226,9 +236,26 @@ function render() {
   renderShoppingList();
   updateListTabs();
   renderAssistanceContacts();
+  renderTransport();
   renderIdeas();
   updateBudget();
   setupRevealAnimations();
+}
+
+function renderTimeline() {
+  const levels = [
+    ["relax", "🟢 Détente"], ["walk", "🟡 Balade"], ["sport", "🟠 Sport"], ["major", "🔵 Sortie majeure"]
+  ];
+  const timeline = document.querySelector("#timeline");
+  timeline.innerHTML = data.days.map((day, index) => `<article class="day"><span class="day-number">${escapeHTML(day[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${index}">${escapeHTML(day[1])}</strong>${day[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(day[3])}"><b>${escapeHTML(day[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(day[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${index}">${escapeHTML(day[2])}</p><label class="day-level level-${escapeHTML(day[4] || "none")}"><span class="sr-only">Rythme de la journée</span><select data-index="${index}"><option value="">Rythme à choisir</option>${levels.map(level => `<option value="${level[0]}"${day[4] === level[0] ? " selected" : ""}>${level[1]}</option>`).join("")}</select></label></div></article>`).join("");
+  timeline.querySelectorAll(".day-level select").forEach(select => select.addEventListener("change", async event => {
+    const day = data.days[Number(event.target.dataset.index)];
+    day[4] = event.target.value;
+    day[3] = currentUserName();
+    renderTimeline();
+    const synced = await saveData();
+    showToast(synced ? "Rythme partagé avec le groupe" : "Rythme sauvegardé sur cet appareil");
+  }));
 }
 
 function renderActivities() {
@@ -297,6 +324,22 @@ function renderAssistanceContacts() {
     renderAssistanceContacts();
     const synced = await saveData();
     showToast(synced ? "Assistance enregistrée pour tout le monde" : "Assistance sauvegardée sur cet appareil");
+  }));
+}
+
+function renderTransport() {
+  const container = document.querySelector("#transportCars");
+  container.innerHTML = data.transport.map(car => `<form class="transport-card" data-id="${escapeHTML(car.id)}"><div class="transport-card-head"><span>🚗</span><strong>${escapeHTML(car.vehicle)}</strong></div><label>Conducteur ou conductrice<input name="driver" maxlength="40" value="${escapeHTML(car.driver)}" placeholder="À décider"></label><label>Passagers<input name="passengers" maxlength="120" value="${escapeHTML(car.passengers)}" placeholder="Prénoms séparés par des virgules"></label><button type="submit">Enregistrer</button>${car.author ? `<small>Modifié par ${escapeHTML(car.author)}</small>` : ""}</form>`).join("");
+  container.querySelectorAll(".transport-card").forEach(form => form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const car = data.transport.find(item => item.id === form.dataset.id);
+    const values = new FormData(form);
+    car.driver = values.get("driver").trim();
+    car.passengers = values.get("passengers").trim();
+    car.author = currentUserName();
+    renderTransport();
+    const synced = await saveData();
+    showToast(synced ? "Répartition partagée avec le groupe" : "Répartition sauvegardée sur cet appareil");
   }));
 }
 
@@ -498,6 +541,11 @@ function setupRevealAnimations() {
 function hasUnsavedDrafts() {
   if (editing) return true;
   if (["#ideaInput", "#checklistInput", "#personalInput", "#shoppingInput"].some(selector => document.querySelector(selector).value.trim())) return true;
+  const transportDraft = [...document.querySelectorAll(".transport-card")].some(form => {
+    const car = data.transport.find(item => item.id === form.dataset.id);
+    return car && (form.elements.driver.value.trim() !== car.driver || form.elements.passengers.value.trim() !== car.passengers);
+  });
+  if (transportDraft) return true;
   return [...document.querySelectorAll(".assistance-card")].some(form => {
     const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
     if (!contact) return false;
