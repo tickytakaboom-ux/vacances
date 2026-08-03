@@ -4,7 +4,6 @@ const initialData = {
   faqVersion: 3,
   checklistVersion: 3,
   contactsVersion: 1,
-  transportVersion: 1,
   ideasVersion: 1,
   shoppingVersion: 1,
   text: {
@@ -38,10 +37,6 @@ const initialData = {
   assistanceContacts: [
     { id: "car-1", vehicle: "Voiture 1", insurer: "", number: "", author: "" },
     { id: "car-2", vehicle: "Voiture 2", insurer: "", number: "", author: "" }
-  ],
-  transport: [
-    { id: "trip-car-1", vehicle: "Voiture 1 · 3 personnes", driver: "", passengers: "", author: "" },
-    { id: "trip-car-2", vehicle: "Voiture 2 · 4 personnes", driver: "", passengers: "", author: "" }
   ],
   ideas: [],
   shopping: [],
@@ -193,10 +188,8 @@ function normalizeData(source) {
     normalized.contactsVersion = initialData.contactsVersion;
     normalized.assistanceContacts = structuredClone(initialData.assistanceContacts);
   }
-  if (source?.transportVersion !== initialData.transportVersion) {
-    normalized.transportVersion = initialData.transportVersion;
-    normalized.transport = structuredClone(initialData.transport);
-  }
+  delete normalized.transportVersion;
+  delete normalized.transport;
   normalized.days = normalized.days.map(day => [day[0], day[1], day[2], day[3] || "", day[4] || ""]);
   if (source?.ideasVersion !== initialData.ideasVersion) {
     normalized.ideasVersion = initialData.ideasVersion;
@@ -236,7 +229,6 @@ function render() {
   renderShoppingList();
   updateListTabs();
   renderAssistanceContacts();
-  renderTransport();
   renderIdeas();
   updateBudget();
   setupRevealAnimations();
@@ -324,22 +316,6 @@ function renderAssistanceContacts() {
     renderAssistanceContacts();
     const synced = await saveData();
     showToast(synced ? "Assistance enregistrée pour tout le monde" : "Assistance sauvegardée sur cet appareil");
-  }));
-}
-
-function renderTransport() {
-  const container = document.querySelector("#transportCars");
-  container.innerHTML = data.transport.map(car => `<form class="transport-card" data-id="${escapeHTML(car.id)}"><div class="transport-card-head"><span>🚗</span><strong>${escapeHTML(car.vehicle)}</strong></div><label>Conducteur ou conductrice<input name="driver" maxlength="40" value="${escapeHTML(car.driver)}" placeholder="À décider"></label><label>Passagers<input name="passengers" maxlength="120" value="${escapeHTML(car.passengers)}" placeholder="Prénoms séparés par des virgules"></label><button type="submit">Enregistrer</button>${car.author ? `<small>Modifié par ${escapeHTML(car.author)}</small>` : ""}</form>`).join("");
-  container.querySelectorAll(".transport-card").forEach(form => form.addEventListener("submit", async event => {
-    event.preventDefault();
-    const car = data.transport.find(item => item.id === form.dataset.id);
-    const values = new FormData(form);
-    car.driver = values.get("driver").trim();
-    car.passengers = values.get("passengers").trim();
-    car.author = currentUserName();
-    renderTransport();
-    const synced = await saveData();
-    showToast(synced ? "Répartition partagée avec le groupe" : "Répartition sauvegardée sur cet appareil");
   }));
 }
 
@@ -541,11 +517,6 @@ function setupRevealAnimations() {
 function hasUnsavedDrafts() {
   if (editing) return true;
   if (["#ideaInput", "#checklistInput", "#personalInput", "#shoppingInput"].some(selector => document.querySelector(selector).value.trim())) return true;
-  const transportDraft = [...document.querySelectorAll(".transport-card")].some(form => {
-    const car = data.transport.find(item => item.id === form.dataset.id);
-    return car && (form.elements.driver.value.trim() !== car.driver || form.elements.passengers.value.trim() !== car.passengers);
-  });
-  if (transportDraft) return true;
   return [...document.querySelectorAll(".assistance-card")].some(form => {
     const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
     if (!contact) return false;

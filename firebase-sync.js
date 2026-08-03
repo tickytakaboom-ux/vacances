@@ -43,7 +43,7 @@ async function writeSharedData(content) {
   setStatus("Synchronisation…");
   try {
     const changedSections = lastRemoteData
-      ? ["text", "days", "activities", "budgets", "faqs", "checklist", "shopping", "ideas", "transport", "assistanceContacts"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
+      ? ["text", "days", "activities", "budgets", "faqs", "checklist", "shopping", "ideas", "assistanceContacts"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
       : ["initialisation"];
     await setDoc(tripRef, {
       contentJson: JSON.stringify(content),
