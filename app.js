@@ -73,6 +73,7 @@ let editSnapshot = null;
 let editTextSnapshot = null;
 let activeListTab = localStorage.getItem(listTabKey) || "shared";
 let personalChecklist = loadPersonalChecklist();
+let activeActivityIndex = null;
 let showAllIdeas = false;
 let showAllFaqs = false;
 const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
@@ -169,6 +170,7 @@ function normalizeData(source) {
     normalized.activityVersion = initialData.activityVersion;
     normalized.activities = structuredClone(initialData.activities);
   }
+  normalized.activities = normalized.activities.map(activity => [activity[0] || "✨", activity[1] || "Activité", activity[2] || "", activity[3] || "", activity[4] || "", activity[5] || ""]);
   if (source?.faqVersion !== initialData.faqVersion) {
     normalized.faqVersion = initialData.faqVersion;
     normalized.faqs = structuredClone(initialData.faqs);
@@ -212,7 +214,7 @@ function render() {
     if (author) el.insertAdjacentHTML("afterend", `<span class="text-editor" title="Modifié par ${escapeHTML(author)}"><b>${escapeHTML(author.charAt(0).toUpperCase())}</b><span>${escapeHTML(author)}</span></span>`);
   });
   document.querySelector("#timeline").innerHTML = data.days.map((d, i) => `<article class="day"><span class="day-number">${escapeHTML(d[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${i}">${escapeHTML(d[1])}</strong>${d[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(d[3])}"><b>${escapeHTML(d[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(d[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${i}">${escapeHTML(d[2])}</p></div></article>`).join("");
-  document.querySelector("#activityGrid").innerHTML = data.activities.map(a => `<article class="activity-card"><span class="activity-icon">${escapeHTML(a[0])}</span><div><strong>${escapeHTML(a[1])}</strong><small>${escapeHTML(a[2])}</small></div></article>`).join("");
+  renderActivities();
   const displayedFaqs = showAllFaqs ? data.faqs : data.faqs.slice(0, 5);
   document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
   const faqShowAll = document.querySelector("#faqShowAll");
@@ -227,6 +229,23 @@ function render() {
   renderIdeas();
   updateBudget();
   setupRevealAnimations();
+}
+
+function renderActivities() {
+  const grid = document.querySelector("#activityGrid");
+  grid.innerHTML = data.activities.map((activity, index) => `<article class="activity-card${activity[3] || activity[4] ? " has-details" : ""}"><button class="activity-open" type="button" data-index="${index}" aria-label="Ouvrir les détails de ${escapeHTML(activity[1])}"><span class="activity-icon">${escapeHTML(activity[0])}</span><div class="activity-summary"><div><strong>${escapeHTML(activity[1])}</strong>${activity[4] ? `<span class="activity-price">${escapeHTML(activity[4])}</span>` : ""}</div><small>${escapeHTML(activity[3] || activity[2] || "Ajouter des détails")}</small>${activity[5] ? `<span class="activity-editor" title="Modifié par ${escapeHTML(activity[5])}"><b>${escapeHTML(activity[5].charAt(0).toUpperCase())}</b></span>` : ""}</div><span class="activity-more">Détails <b>→</b></span></button></article>`).join("");
+  grid.querySelectorAll(".activity-open").forEach(button => button.addEventListener("click", () => openActivityDialog(Number(button.dataset.index))));
+}
+
+function openActivityDialog(index) {
+  const activity = data.activities[index];
+  if (!activity) return;
+  activeActivityIndex = index;
+  document.querySelector("#activityDialogTitle").textContent = activity[1];
+  document.querySelector("#activityName").value = activity[1];
+  document.querySelector("#activityPrice").value = activity[4] || "";
+  document.querySelector("#activityNotes").value = activity[3] || "";
+  document.querySelector("#activityDialog").showModal();
 }
 
 function renderIdeas() {
@@ -552,6 +571,22 @@ document.querySelector("#shoppingForm").addEventListener("submit", async event =
   const synced = await saveData();
   showToast(synced ? "Produit ajouté pour tout le monde" : "Produit sauvegardé sur cet appareil");
 });
+document.querySelector("#activityForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const activity = data.activities[activeActivityIndex];
+  if (!activity) return;
+  const name = document.querySelector("#activityName").value.trim().replace(/\s+/g, " ");
+  if (!name) return;
+  activity[1] = name;
+  activity[3] = document.querySelector("#activityNotes").value.trim();
+  activity[4] = document.querySelector("#activityPrice").value.trim().replace(/\s+/g, " ");
+  activity[5] = currentUserName();
+  document.querySelector("#activityDialog").close();
+  renderActivities();
+  const synced = await saveData();
+  showToast(synced ? "Activité mise à jour pour tout le monde" : "Activité sauvegardée sur cet appareil");
+});
+document.querySelector("#closeActivityDialog").addEventListener("click", () => document.querySelector("#activityDialog").close());
 document.querySelector("#ideaForm").addEventListener("submit", async event => {
   event.preventDefault();
   const input = document.querySelector("#ideaInput");

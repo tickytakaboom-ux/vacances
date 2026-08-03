@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260801-1">
+  <link rel="stylesheet" href="styles.css?v=20260803-1">
 </head>
 <body>
   <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
@@ -312,8 +312,17 @@
       </div>
     </form>
   </dialog>
+  <dialog id="activityDialog" class="activity-dialog">
+    <form id="activityForm">
+      <div class="dialog-head"><div><p class="eyebrow dark">Fiche activité</p><h3 id="activityDialogTitle">Activité</h3></div><button type="button" id="closeActivityDialog" aria-label="Fermer">×</button></div>
+      <label>Nom de l'activité<input id="activityName" maxlength="60" required></label>
+      <label>Prix <span>(facultatif)</span><input id="activityPrice" maxlength="40" placeholder="Ex. 25 € par personne"></label>
+      <label>Précisions<textarea id="activityNotes" maxlength="600" rows="6" placeholder="Horaires, adresse, réservation, ce qu'il faut prévoir…"></textarea></label>
+      <button class="button button-dark" type="submit">Enregistrer pour tout le monde</button>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="app.js?v=20260801-2"></script>
+  <script src="app.js?v=20260803-1"></script>
   <script type="module" src="firebase-sync.js?v=20260801-1"></script>
 </body>
 </html>
