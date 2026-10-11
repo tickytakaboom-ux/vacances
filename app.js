@@ -7,7 +7,7 @@ const initialData = {
   ideasVersion: 1,
   shoppingVersion: 1,
   text: {
-    intro: "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.",
+    intro: "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
   },
   textAuthors: {},
@@ -51,7 +51,7 @@ const initialData = {
     ["Comment se répartit-on dans les voitures ?", "Deux voitures sont prévues : 3 personnes dans l'une et 4 personnes dans l'autre. La répartition exacte sera décidée avant le départ."],
     ["Les draps et les serviettes sont-ils fournis ?", "Oui, en supplément. Les draps coûtent 15 € pour une personne ou 25 € pour deux personnes. Le kit avec une petite et une grande serviette coûte 20 € par personne."],
     ["Qui conduit ?", "Ceux qui ont le permis. Les conducteurs et les voitures seront fixés avant le départ."],
-    ["Comment fait-on les courses ?", "Dans un magasin 👍"],
+    ["Comment fait-on les courses ?", "On prépare la liste ensemble dans l’onglet Courses."],
     ["Qui dort où ?", "Tout le monde dans le chalet de 7 personnes. La répartition se fera sur place."],
     ["Comment partage-t-on le budget ?", "À parts égales pour les courses, le voyage et la location. Chacun paie ses activités et son restaurant."],
     ["Quand faut-il réserver ?", "Au plus tard en janvier. L'objectif est de tout fixer avant la fin de l'année civile."],
@@ -78,33 +78,6 @@ let showAllIdeas = false;
 let showAllFaqs = false;
 const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
-let pageLoaded = document.readyState === "complete";
-let syncReady = !currentUserName();
-let loaderHidden = false;
-const loaderStartedAt = performance.now();
-const minimumLoaderDuration = 500;
-
-function hideSiteLoader() {
-  if (loaderHidden) return;
-  const remaining = minimumLoaderDuration - (performance.now() - loaderStartedAt);
-  if (remaining > 0) {
-    setTimeout(hideSiteLoader, remaining);
-    return;
-  }
-  loaderHidden = true;
-  const loader = document.querySelector("#siteLoader");
-  loader.classList.add("leaving");
-  setTimeout(() => loader.remove(), 280);
-}
-
-function finishLoadingWhenReady() {
-  if (pageLoaded && syncReady) setTimeout(hideSiteLoader, 450);
-}
-
-window.addEventListener("load", () => { pageLoaded = true; finishLoadingWhenReady(); });
-window.addEventListener("trip-sync-ready", () => { syncReady = true; finishLoadingWhenReady(); });
-setTimeout(hideSiteLoader, 2500);
-
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 }
@@ -170,6 +143,9 @@ function normalizeData(source) {
     normalized.activityVersion = initialData.activityVersion;
     normalized.activities = structuredClone(initialData.activities);
   }
+  // Mettre à jour seulement les textes par défaut, sans toucher aux textes du groupe.
+  if (normalized.text?.intro === "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine \u2014 ou ne rien faire du tout.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.";
+  normalized.faqs = normalized.faqs.map(faq => faq[0] === "Comment fait-on les courses ?" && faq[1] === "Dans un magasin 👍" ? [faq[0], "On prépare la liste ensemble dans l’onglet Courses."] : faq);
   normalized.activities = normalized.activities.map(activity => [activity[0] || "✨", activity[1] || "Activité", activity[2] || "", activity[3] || "", activity[4] || "", activity[5] || ""]);
   if (source?.faqVersion !== initialData.faqVersion) {
     normalized.faqVersion = initialData.faqVersion;
@@ -219,7 +195,7 @@ function render() {
   renderTimeline();
   renderActivities();
   const displayedFaqs = showAllFaqs ? data.faqs : data.faqs.slice(0, 5);
-  document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>+</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
+  document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>${window.TripIcons.icon("plus")}</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
   const faqShowAll = document.querySelector("#faqShowAll");
   faqShowAll.hidden = data.faqs.length <= 5;
   faqShowAll.textContent = showAllFaqs ? "Réduire la liste" : `Voir les ${data.faqs.length} questions`;
@@ -231,7 +207,6 @@ function render() {
   renderAssistanceContacts();
   renderIdeas();
   updateBudget();
-  setupRevealAnimations();
 }
 
 function renderTimeline() {
@@ -252,7 +227,7 @@ function renderTimeline() {
 
 function renderActivities() {
   const grid = document.querySelector("#activityGrid");
-  grid.innerHTML = data.activities.map((activity, index) => `<article class="activity-card${activity[3] || activity[4] ? " has-details" : ""}"><button class="activity-open" type="button" data-index="${index}" aria-label="Ouvrir les détails de ${escapeHTML(activity[1])}"><span class="activity-icon">${escapeHTML(activity[0])}</span><div class="activity-summary"><div><strong>${escapeHTML(activity[1])}</strong>${activity[4] ? `<span class="activity-price">${escapeHTML(activity[4])}</span>` : ""}</div><small>${escapeHTML(activity[3] || activity[2] || "Ajouter des détails")}</small>${activity[5] ? `<span class="activity-editor" title="Modifié par ${escapeHTML(activity[5])}"><b>${escapeHTML(activity[5].charAt(0).toUpperCase())}</b></span>` : ""}</div><span class="activity-more">Détails <b>→</b></span></button></article>`).join("");
+  grid.innerHTML = data.activities.map((activity, index) => `<article class="activity-card${activity[3] || activity[4] ? " has-details" : ""}"><button class="activity-open" type="button" data-index="${index}" aria-label="Ouvrir les détails de ${escapeHTML(activity[1])}"><span class="activity-icon">${window.TripIcons.icon(activity[0])}</span><div class="activity-summary"><div><strong>${escapeHTML(activity[1])}</strong>${activity[4] ? `<span class="activity-price">${escapeHTML(activity[4])}</span>` : ""}</div><small>${escapeHTML(activity[3] || activity[2] || "Ajouter des détails")}</small>${activity[5] ? `<span class="activity-editor" title="Modifié par ${escapeHTML(activity[5])}"><b>${escapeHTML(activity[5].charAt(0).toUpperCase())}</b></span>` : ""}</div><span class="activity-more">Détails <b>${window.TripIcons.icon("arrow-right")}</b></span></button></article>`).join("");
   grid.querySelectorAll(".activity-open").forEach(button => button.addEventListener("click", () => openActivityDialog(Number(button.dataset.index))));
 }
 
@@ -279,7 +254,7 @@ function renderIdeas() {
   const ideasShowAll = document.querySelector("#ideasShowAll");
   ideasShowAll.hidden = data.ideas.length <= 4;
   ideasShowAll.textContent = showAllIdeas ? "Réduire la liste" : `Voir les ${data.ideas.length} idées`;
-  list.innerHTML = displayedIdeas.map(idea => `<article class="idea-card${new Date(idea.createdAt).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">✎</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">×</button></div></footer></article>`).join("");
+  list.innerHTML = displayedIdeas.map(idea => `<article class="idea-card${new Date(idea.createdAt).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">${window.TripIcons.icon("pencil")}</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">${window.TripIcons.icon("x")}</button></div></footer></article>`).join("");
   list.querySelectorAll(".idea-edit").forEach(button => button.addEventListener("click", async event => {
     const idea = data.ideas.find(item => item.id === event.target.closest(".idea-card").dataset.id);
     const nextText = prompt("Modifier cette idée :", idea.text)?.trim();
@@ -323,7 +298,7 @@ function renderChecklist() {
   const list = document.querySelector("#checklistList");
   const completed = data.checklist.filter(item => item.checked).length;
   if (activeListTab === "shared") document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
-  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}${new Date(item.updatedAt || 0).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}${new Date(item.updatedAt || 0).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", async event => {
     const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     item.checked = event.target.checked;
@@ -359,7 +334,7 @@ function renderPersonalChecklist() {
   const list = document.querySelector("#personalList");
   const completed = personalChecklist.filter(item => item.checked).length;
   if (activeListTab === "personal") document.querySelector("#checklistProgress").textContent = `${completed} / ${personalChecklist.length} dans ma valise`;
-  list.innerHTML = personalChecklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">✓</span><span class="check-text">${escapeHTML(item.text)}</span></label><button class="personal-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="personal-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.innerHTML = personalChecklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><span class="check-text">${escapeHTML(item.text)}</span></label><button class="personal-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="personal-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", event => {
     const item = personalChecklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     item.checked = event.target.checked;
@@ -390,7 +365,7 @@ function renderShoppingList() {
     list.innerHTML = '<p class="list-empty">La liste des courses est vide pour l’instant.</p>';
     return;
   }
-  list.innerHTML = data.shopping.map(item => `<article class="shopping-item${item.done ? " done" : ""}" data-id="${escapeHTML(item.id)}"><label class="shopping-done"><input type="checkbox" ${item.done ? "checked" : ""}><span class="check-mark">✓</span><strong>${escapeHTML(item.text)}</strong></label><div class="shopping-choice" role="group" aria-label="Décision pour ${escapeHTML(item.text)}"><button type="button" data-decision="bring" class="${item.decision === "bring" ? "selected" : ""}">On apporte</button><button type="button" data-decision="buy" class="${item.decision === "buy" ? "selected" : ""}">On achète</button></div>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="shopping-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">✎</button><button class="shopping-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">×</button></article>`).join("");
+  list.innerHTML = data.shopping.map(item => `<article class="shopping-item${item.done ? " done" : ""}" data-id="${escapeHTML(item.id)}"><label class="shopping-done"><input type="checkbox" ${item.done ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><strong>${escapeHTML(item.text)}</strong></label><div class="shopping-choice" role="group" aria-label="Décision pour ${escapeHTML(item.text)}"><button type="button" data-decision="bring" class="${item.decision === "bring" ? "selected" : ""}">On apporte</button><button type="button" data-decision="buy" class="${item.decision === "buy" ? "selected" : ""}">On achète</button></div>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="shopping-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="shopping-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
   list.querySelectorAll(".shopping-done input").forEach(input => input.addEventListener("change", async event => {
     const item = data.shopping.find(entry => entry.id === event.target.closest(".shopping-item").dataset.id);
     item.done = event.target.checked;
@@ -449,7 +424,7 @@ function updateBudget() {
 }
 
 function updateCountdown() {
-  const departure = new Date("2027-07-04T00:00:00+02:00");
+  const departure = new Date("2027-07-11T00:00:00+02:00");
   const remaining = departure.getTime() - Date.now();
   if (remaining <= 0) {
     document.querySelector("#countdown").innerHTML = "<strong class=\"countdown-live\">C'est parti !</strong>";
@@ -471,7 +446,7 @@ async function setEditing(active) {
   }
   document.body.classList.toggle("editing", active);
   document.querySelector("#editButton").setAttribute("aria-pressed", String(active));
-  document.querySelector("#editButton").innerHTML = active ? "✓ Terminer" : "<span aria-hidden=\"true\">✎</span> Modifier";
+  document.querySelector("#editButton").innerHTML = active ? window.TripIcons.icon("check") + " Terminer" : window.TripIcons.icon("pencil") + " Modifier";
   document.querySelectorAll(".editable").forEach(el => el.contentEditable = active);
   document.querySelectorAll(".day-title,.day-copy").forEach(el => el.contentEditable = active);
   if (!active) {
@@ -490,28 +465,13 @@ async function setEditing(active) {
     });
     render();
     const synced = await saveData();
-    showToast(synced ? "Changements partagés avec le groupe" : "Sauvegardé sur cet appareil — Firebase indisponible");
+    showToast(synced ? "Changements partagés avec le groupe" : "Sauvegardé sur cet appareil. Firebase indisponible");
   }
 }
 
 function showToast(message) {
   const toast = document.querySelector("#toast"); toast.textContent = message; toast.classList.add("show");
   clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 2600);
-}
-
-let revealObserver = null;
-function setupRevealAnimations() {
-  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  revealObserver ??= new IntersectionObserver(entries => entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    entry.target.classList.add("revealed");
-    revealObserver.unobserve(entry.target);
-  }), { rootMargin: "0px 0px -8%", threshold: .08 });
-  document.querySelectorAll(".stat-card,.day,.activity-card,.idea-card,.payment-card,.checklist-card,.contact-featured,.emergency-grid a,.assistance-card,.link-grid a").forEach(element => {
-    if (element.classList.contains("reveal-ready")) return;
-    element.classList.add("reveal-ready");
-    revealObserver.observe(element);
-  });
 }
 
 function hasUnsavedDrafts() {
@@ -525,9 +485,9 @@ function hasUnsavedDrafts() {
 }
 
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
-document.querySelector("#ideasShowAll").addEventListener("click", () => { showAllIdeas = !showAllIdeas; renderIdeas(); setupRevealAnimations(); });
+document.querySelector("#ideasShowAll").addEventListener("click", () => { showAllIdeas = !showAllIdeas; renderIdeas(); });
 document.querySelector("#faqShowAll").addEventListener("click", () => { showAllFaqs = !showAllFaqs; render(); });
-document.querySelector("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+document.querySelector("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
 window.addEventListener("scroll", () => document.querySelector("#backToTop").classList.toggle("visible", scrollY > 700), { passive: true });
 window.addEventListener("beforeunload", event => {
   if (!hasUnsavedDrafts()) return;
@@ -644,7 +604,7 @@ document.querySelector("#resetData").addEventListener("click", async () => {
     render();
     const synced = await saveData();
     document.querySelector("#editDialog").close();
-    showToast(synced ? "Version initiale restaurée pour tout le monde" : "Reset local uniquement — Firebase indisponible");
+    showToast(synced ? "Version initiale restaurée pour tout le monde" : "Reset local uniquement. Firebase indisponible");
   }
 });
 

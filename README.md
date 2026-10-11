@@ -32,3 +32,8 @@ Voir [le guide météo](docs/weather.md) pour les tests et l’activation gratui
 ## Carte du voyage
 
 Carte compacte avec les dix lieux choisis et une sélection alentour actualisée chaque jour. Voir [la documentation de la carte](docs/map.md) pour les sources, le cache, les tests et la publication.
+
+
+## Retouche du carnet
+
+Direction dans [DESIGN.md](DESIGN.md). Voir [le livrable](docs/design-retouche.md) pour les changements, les vérifications et les informations à compléter.

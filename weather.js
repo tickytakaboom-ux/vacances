@@ -9,7 +9,7 @@
   let loading = false, lastCheck = 0;
   const paris = { timeZone: "Europe/Paris" };
   const today = () => new Intl.DateTimeFormat("en-CA", { ...paris, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const round = value => Number.isFinite(value) ? Math.round(value).toString() : "—";
+  const round = value => Number.isFinite(value) ? Math.round(value).toString() : "n.d.";
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -18,19 +18,26 @@
   };
   function condition(value) {
     if (typeof value === "number") {
-      if (value === 0) return "☀️ Soleil";
-      if (value <= 3) return "⛅ Nuages";
-      if (value === 45 || value === 48) return "🌫️ Brouillard";
-      if (value >= 95) return "⛈️ Orages";
-      if ([71, 73, 75, 77, 85, 86].includes(value)) return "🌨️ Neige";
-      return "🌧️ Pluie";
+      if (value === 0) return "Soleil";
+      if (value <= 3) return "Nuages";
+      if (value === 45 || value === 48) return "Brouillard";
+      if (value >= 95) return "Orages";
+      if ([71, 73, 75, 77, 85, 86].includes(value)) return "Neige";
+      return "Pluie";
     }
-    if (/thunder/.test(value)) return "⛈️ Orages";
-    if (/snow|sleet/.test(value)) return "🌨️ Neige";
-    if (/rain/.test(value)) return "🌧️ Pluie";
-    if (/fog/.test(value)) return "🌫️ Brouillard";
-    if (/clearsky|fair/.test(value)) return "☀️ Soleil";
-    return "⛅ Nuages";
+    if (/thunder/.test(value)) return "Orages";
+    if (/snow|sleet/.test(value)) return "Neige";
+    if (/rain/.test(value)) return "Pluie";
+    if (/fog/.test(value)) return "Brouillard";
+    if (/clearsky|fair/.test(value)) return "Soleil";
+    return "Nuages";
+  }
+  function conditionElement(tag, value) {
+    const label = condition(value);
+    const iconName = { Soleil: "sun", Nuages: "cloud", Brouillard: "cloud-fog", Orages: "cloud-lightning", Neige: "cloud-snow", Pluie: "cloud-rain" }[label];
+    const result = element(tag, "weather-condition");
+    result.append(window.TripIcons.create(iconName), document.createTextNode(label));
+    return result;
   }
   function valid(data) {
     return data?.version === 1 && data.location?.name === "Embrun" && Array.isArray(data.days) &&
@@ -48,14 +55,14 @@
       status.textContent = data.days.length ? "Dernières prévisions expirées. Mise à jour en attente." : data.message || "Météo momentanément indisponible.";
     } else {
       const summary = element("div", "weather-today");
-      summary.append(element("strong", "", condition(first.condition)),
+      summary.append(conditionElement("strong", first.condition),
         element("span", "weather-temperature", `${round(first.min)}–${round(first.max)} °C`));
       const metrics = element("div", "weather-metrics");
       const rain = Number.isFinite(first.rainProbability) ? `Pluie ${round(first.rainProbability)} %` :
-        Number.isFinite(first.rain) ? `Pluie prévue ${first.rain.toLocaleString("fr-FR")} mm*` : "Pluie —";
+        Number.isFinite(first.rain) ? `Pluie prévue ${first.rain.toLocaleString("fr-FR")} mm*` : "Pluie n.d.";
       metrics.append(element("span", "", rain), element("span", "", `Vent ≤ ${round(first.wind)} km/h`),
-        element("span", "", `UV${first.uvKind === "clear-sky" ? " ciel clair" : ""} ${Number.isFinite(first.uv) ? first.uv.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "—"}`),
-        element("span", "", `☀ Coucher ${first.sunset ? first.sunset.replace(":", " h ") : "—"}`));
+        element("span", "", `UV${first.uvKind === "clear-sky" ? " ciel clair" : ""} ${Number.isFinite(first.uv) ? first.uv.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) : "n.d."}`),
+        element("span", "", `Coucher ${first.sunset ? first.sunset.replace(":", " h ") : "n.d."}`));
       summary.append(metrics); content.append(summary);
       const details = element("details", "weather-details"); details.open = open;
       details.append(element("summary", "", "Les prochains jours"));
@@ -63,9 +70,9 @@
       for (const day of days.filter(day => day.date > today()).slice(0, 6)) {
         const label = new Intl.DateTimeFormat("fr-FR", { ...paris, weekday: "short", day: "numeric", month: "short" }).format(new Date(`${day.date}T12:00:00Z`));
         const row = element("div", "weather-day");
-        row.append(element("span", "", label), element("span", "", condition(day.condition)),
+        row.append(element("span", "", label), conditionElement("span", day.condition),
           element("strong", "", `${round(day.min)}–${round(day.max)} °C`),
-          element("span", "", Number.isFinite(day.rainProbability) ? `Pluie ${round(day.rainProbability)} %` : Number.isFinite(day.rain) ? `${day.rain.toLocaleString("fr-FR")} mm*` : "Pluie —"));
+          element("span", "", Number.isFinite(day.rainProbability) ? `Pluie ${round(day.rainProbability)} %` : Number.isFinite(day.rain) ? `${day.rain.toLocaleString("fr-FR")} mm*` : "Pluie n.d."));
         list.append(row);
       }
       details.append(list); content.append(details);

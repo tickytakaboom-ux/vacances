@@ -6,7 +6,7 @@
   const loadButton = root.querySelector("#loadTripMap");
   const status = root.querySelector(".trip-map-status");
   const filters = new Set(["restaurants", "courses", "sorties"]);
-  const colors = { restaurants: "#aa7259", courses: "#557f91", sorties: "#638265" };
+  const colors = { restaurants: "var(--nearby-restaurant)", courses: "var(--nearby-courses)", sorties: "var(--nearby-sortie)" };
   const labels = { restaurants: "Restaurant", courses: "Courses", sorties: "Sortie" };
   const markers = new Map();
   let selected = [], nearby = null, map = null, nearbyLayer = null, chosenLayer = null, libraryPromise = null, ready = null;
@@ -74,9 +74,9 @@
     content.append(node("strong", "", place.name), node("small", "", index === null ? labels[place.category] || "À proximité" : `Lieu choisi · n° ${index + 1}`));
     if (place.address) content.append(node("p", "", place.address));
     if (place.note) content.append(node("small", "", place.note));
-    const link = node("a", "", "Ouvrir l’itinéraire ↗");
+    const link = node("a", "", "Ouvrir l’itinéraire");
     link.href = directions(place); link.target = "_blank"; link.rel = "noopener noreferrer";
-    content.append(link); return content;
+    link.append(window.TripIcons.create("external-link")); content.append(link); return content;
   }
   function showOverview() {
     if (!map || !selected.length) return;
@@ -86,7 +86,7 @@
     if (!map || !nearbyLayer) return;
     nearbyLayer.clearLayers();
     for (const place of placesAround()) {
-      const marker = L.circleMarker([place.latitude, place.longitude], { radius: 6, color: "#fff", weight: 2, fillColor: colors[place.category], fillOpacity: .9 });
+      const marker = L.circleMarker([place.latitude, place.longitude], { radius: 6, color: getComputedStyle(root).getPropertyValue("--white").trim(), weight: 2, fillColor: getComputedStyle(root).getPropertyValue(colors[place.category].slice(4, -1)).trim(), fillOpacity: .9 });
       marker.bindPopup(popup(place)); marker.addTo(nearbyLayer);
       const path = marker.getElement();
       if (path) {
@@ -158,10 +158,10 @@
         markers.get(place.id)?.openPopup();
         root.querySelector(".trip-map-canvas").scrollIntoView({ block: "center", behavior: "auto" });
       });
-      const link = node("a", "", "↗");
+      const link = node("a", "", "");
       link.href = directions(place); link.target = "_blank"; link.rel = "noopener noreferrer";
       link.setAttribute("aria-label", `Itinéraire vers ${place.name}`);
-      item.append(button, link); list.append(item);
+      link.append(window.TripIcons.create("external-link")); item.append(button, link); list.append(item);
     });
   }
   ready = (async () => {
@@ -189,7 +189,7 @@
   const expand = root.querySelector("#expandTripMap");
   function setExpanded(value) {
     card.classList.toggle("expanded", value); expand.setAttribute("aria-expanded", String(value));
-    expand.textContent = value ? "Réduire ↙" : "Agrandir ↗";
+    expand.replaceChildren(document.createTextNode(value ? "Réduire " : "Agrandir "), window.TripIcons.create(value ? "minimize" : "maximize"));
     requestAnimationFrame(() => map?.invalidateSize({ pan: false }));
   }
   expand.addEventListener("click", () => setExpanded(!card.classList.contains("expanded")));

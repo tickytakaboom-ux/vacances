@@ -4,7 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#173f35">
-  <meta name="description" content="Le carnet partagé du séjour des Zigotos à Embrun en 2027.">
+  <meta name="description" content="Du 11 au 18 juillet 2027, les Zigotos préparent leur semaine à Embrun : programme, activités, budget et listes partagées.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:title" content="Les Zigotos à Embrun · 11 au 18 juillet 2027">
+  <meta property="og:description" content="Notre programme, nos lieux et nos listes pour préparer la semaine ensemble.">
+  <meta property="og:url" content="https://tickytakaboom-ux.github.io/vacances/">
+  <meta property="og:image" content="https://tickytakaboom-ux.github.io/vacances/assets/partage-embrun.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Les Zigotos à Embrun, du 11 au 18 juillet 2027">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
@@ -12,18 +22,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260804-1">
-  <link rel="stylesheet" href="weather.css?v=20261011-1">
+  <link rel="stylesheet" href="styles.css?v=20261011-2">
+  <link rel="stylesheet" href="weather.css?v=20261011-2">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="map.css?v=20261011-1">
+  <link rel="stylesheet" href="map.css?v=20261011-2">
 </head>
 <body>
-  <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
-    <div class="loader-logo"><img src="assets/icon-192.png" alt=""></div>
-    <strong>Les Zigotos</strong>
-    <span>Préparation du carnet partagé…</span>
-    <i aria-hidden="true"></i>
-  </div>
   <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="#accueil" aria-label="Retour à l'accueil">
@@ -38,7 +42,7 @@
         <span class="sync-label" id="syncLabel">Connexion…</span>
       </span>
       <button class="edit-button" id="editButton" type="button" aria-pressed="false">
-        <span aria-hidden="true">✎</span> Modifier
+        <span data-icon="pencil"></span> Modifier
       </button>
     </div>
   </header>
@@ -49,25 +53,25 @@
       <div class="hero-orb orb-two"></div>
       <div class="hero-content">
         <p class="eyebrow">Vacances d'été · 2027</p>
-        <h1>Direction<br><em>Embrun</em></h1>
-        <p class="hero-copy">Une semaine entre lac et montagnes, à sept, au Camping de la Clapière.</p>
+        <h1>Notre semaine<br>à <em>Embrun</em></h1>
+        <p class="hero-copy">Du 11 au 18 juillet 2027, on prépare notre semaine à sept au camping La Clapière.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#programme">Voir le programme</a>
-          <a class="button button-ghost" href="#carte">Voir la carte ↓</a>
+          <a class="button button-primary" href="#programme">Préparer le programme</a>
+          <a class="button button-ghost" href="#carte">Voir la carte <span data-icon="arrow-down"></span></a>
         </div>
       </div>
       <div class="hero-card">
         <div class="weather-mark" aria-hidden="true"><span></span></div>
         <p>Camping La Clapière</p>
-        <strong>4–11 ou 11–18 juillet</strong>
+        <strong>11 au 18 juillet 2027</strong>
         <small>7 personnes · 7 h de route</small>
-        <div class="countdown" id="countdown" aria-label="Compte à rebours avant le 4 juillet 2027">
-          <span><b id="countdownDays">—</b>jours</span>
+        <div class="countdown" id="countdown" aria-label="Compte à rebours avant le 11 juillet 2027">
+          <span><b id="countdownDays">…</b>jours</span>
           <span><b id="countdownHours">—</b>heures</span>
           <span><b id="countdownMinutes">—</b>min</span>
           <span><b id="countdownSeconds">—</b>sec</span>
         </div>
-        <small class="countdown-note" id="countdownNote">avant le premier départ possible</small>
+        <small class="countdown-note" id="countdownNote">avant notre semaine à Embrun</small>
       </div>
       <div class="scroll-hint">Découvrir <span>↓</span></div>
     </section>
@@ -88,10 +92,10 @@
     <section class="section intro-section">
       <div>
         <p class="eyebrow dark">Le voyage en bref</p>
-        <h2>Le grand air,<br>sans prise de tête.</h2>
+        <h2>Notre semaine<br>au bord du lac.</h2>
       </div>
       <div class="editable-block">
-        <p class="lead editable" data-key="intro">Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine — ou ne rien faire du tout.</p>
+        <p class="lead editable" data-key="intro">On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.</p>
       </div>
       <div class="stat-grid">
         <article class="stat-card"><strong id="statPeople">7</strong><span>zigotos</span></article>
@@ -113,7 +117,7 @@
       <div class="section-heading">
         <p class="eyebrow dark">Programme</p>
         <h2>Une semaine<br>à notre rythme.</h2>
-        <p>Le planning reste volontairement souple. En mode édition, chacun peut compléter les journées sur son appareil.</p>
+        <p>Clique sur Modifier pour compléter les journées. Les changements sont partagés avec le groupe.</p>
       </div>
       <div class="timeline" id="timeline"></div>
     </section>
@@ -138,26 +142,26 @@
             <button type="button" data-map-filter="courses" aria-pressed="true">Courses</button>
             <button type="button" data-map-filter="sorties" aria-pressed="true">Sorties</button>
           </div>
-          <div class="trip-map-actions"><button type="button" id="mapOverview" disabled>Nos 10 lieux</button><button type="button" id="expandTripMap" aria-expanded="false" disabled>Agrandir ↗</button></div>
+          <div class="trip-map-actions"><button type="button" id="mapOverview" disabled>Nos 10 lieux</button><button type="button" id="expandTripMap" aria-expanded="false" disabled>Agrandir <span data-icon="maximize"></span></button></div>
         </div>
         <div class="trip-map-canvas" id="tripMapViewport" aria-label="Carte des lieux du voyage">
-          <div class="trip-map-gate"><span aria-hidden="true">⌖</span><h3>Du lac aux montagnes</h3><p>Retrouve nos lieux et les adresses alentour.</p><button type="button" class="button button-dark" id="loadTripMap">Afficher la carte</button></div>
+          <div class="trip-map-gate"><span data-icon="map-pin"></span><h3>Du lac aux montagnes</h3><p>Retrouve nos lieux et les adresses alentour.</p><button type="button" class="button button-dark" id="loadTripMap">Afficher la carte</button></div>
         </div>
         <div class="trip-map-footer"><div class="trip-map-legend"><span><i class="chosen"></i>Nos lieux choisis</span><span><i class="nearby"></i><span id="nearbyCount">Lieux alentour</span></span></div><p class="trip-map-status" role="status">Chargement des lieux…</p></div>
       </div>
-      <p class="trip-map-note">Sélection alentour actualisée chaque jour · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> / <a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noopener noreferrer">Notre carte Google ↗</a></p>
+      <p class="trip-map-note">Sélection alentour actualisée chaque jour · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> / <a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noopener noreferrer">Notre carte Google <span data-icon="external-link"></span></a></p>
       <details class="trip-map-list"><summary>Voir nos 10 lieux et les itinéraires</summary><ol class="trip-map-places"></ol></details>
     </section>
 
     <section class="section ideas-section" id="idees">
       <div class="ideas-heading">
-        <div><p class="eyebrow dark">Rien n'est encore décidé</p><h2>Idées en attente.</h2></div>
+        <div><p class="eyebrow dark">À proposer au groupe</p><h2>Idées en attente.</h2></div>
         <span id="ideasCount">0 idée</span>
       </div>
       <form class="idea-form" id="ideaForm">
         <label for="ideaInput">Une activité, une sortie, une adresse…</label>
         <textarea id="ideaInput" maxlength="240" rows="4" placeholder="Écrire une idée pour le groupe" required></textarea>
-        <button type="submit">Ajouter l'idée +</button>
+        <button type="submit">Ajouter l'idée <span data-icon="plus"></span></button>
       </form>
       <div class="ideas-list" id="ideasList"></div>
       <button class="show-more" id="ideasShowAll" type="button" hidden>Voir toutes les idées</button>
@@ -167,7 +171,7 @@
       <div class="section-heading budget-heading">
         <div>
           <p class="eyebrow dark">Budget prévisionnel</p>
-          <h2>Simple, clair,<br>partagé.</h2>
+          <h2>Le budget<br>du séjour.</h2>
         </div>
         <label class="people-control">Participants
           <select id="peopleSelect" aria-label="Nombre de participants">
@@ -224,7 +228,7 @@
           <p class="list-note">Cette liste et ses coches sont partagées avec tout le groupe.</p>
           <form id="checklistForm" class="checklist-form">
             <label for="checklistInput">Ajouter du matériel commun</label>
-            <div><input id="checklistInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+            <div><input id="checklistInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="checklist-list" id="checklistList"></div>
         </div>
@@ -232,7 +236,7 @@
           <p class="list-note private-note">Cette liste reste uniquement sur cet appareil. Personne d'autre ne voit tes affaires ni tes coches.</p>
           <form id="personalForm" class="checklist-form">
             <label for="personalInput">Ajouter dans ma valise</label>
-            <div><input id="personalInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+            <div><input id="personalInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="checklist-list personal-list" id="personalList"></div>
         </div>
@@ -240,7 +244,7 @@
           <p class="list-note">Ajoutez d'abord les produits, puis décidez ensemble s'il faut les apporter ou les acheter sur place.</p>
           <form id="shoppingForm" class="checklist-form">
             <label for="shoppingInput">Ajouter un produit</label>
-            <div><input id="shoppingInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter +</button></div>
+            <div><input id="shoppingInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="shopping-list" id="shoppingList"></div>
         </div>
@@ -262,7 +266,7 @@
           <div><dt>Adresse</dt><dd>Avenue du Lac, 05200 Embrun</dd></div>
           <div><dt>Prix estimé</dt><dd>951,34 € taxes incluses</dd></div>
         </dl>
-        <a class="text-link" href="https://www.camping-embrun-clapiere.com/" target="_blank" rel="noreferrer">Voir le site du camping ↗</a>
+        <a class="text-link" href="https://www.camping-embrun-clapiere.com/" target="_blank" rel="noreferrer">Voir le site du camping <span data-icon="external-link"></span></a>
       </div>
     </section>
 
@@ -292,13 +296,13 @@
         <h2>Liens utiles.</h2>
       </div>
       <div class="link-grid">
-        <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noreferrer"><span>01</span><strong>Notre carte</strong><small>Google Maps ↗</small></a>
-        <a href="https://calendar.google.com/calendar/u/0?cid=MmViNDVlNWU0MWUwZDM4Yzg4YzQ0OTAyMDczMzNmNjc0NDQwOTA3ZWM0YzE5M2I2ZGU0NjkzZTQ1YzU0MzgyMUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t" target="_blank" rel="noreferrer"><span>02</span><strong>Calendrier</strong><small>Google Agenda ↗</small></a>
-        <a href="https://1drv.ms/x/c/339f97857d6993e7/IQBGoKMz5WzKQbTa9L4u_ZAYAZ5mIUL807s51vrcFDVk3dQ?e=PnYQcn" target="_blank" rel="noreferrer"><span>03</span><strong>Budget original</strong><small>Excel en ligne ↗</small></a>
-        <a href="https://www.youtube.com/watch?v=0PtBhmRqBPc" target="_blank" rel="noreferrer"><span>04</span><strong>Embrun et les environs</strong><small>Vidéo YouTube ↗</small></a>
-        <a href="https://www.youtube.com/watch?v=pYZUeqefw-w" target="_blank" rel="noreferrer"><span>05</span><strong>Voir le plan d'eau</strong><small>Vidéo YouTube ↗</small></a>
-        <a href="https://docs.google.com/document/d/1krp5eV-GFet18ZUpQHwsuz8Mv-fkHlBARXVamydu0OU/edit?tab=t.0" target="_blank" rel="noreferrer"><span>06</span><strong>Document partagé</strong><small>Google Docs · modifiable ↗</small></a>
-        <a class="link-featured" href="https://drive.google.com/uc?export=download&amp;id=1-Yaetbn5HIi3vJjiVDCbtzbM-5pbMe40" target="_blank" rel="noreferrer"><span>07</span><strong>Télécharger la présentation</strong><small>Présentation PDF ↓</small></a>
+        <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noreferrer"><span>01</span><strong>Notre carte</strong><small>Google Maps <span data-icon="external-link"></span></small></a>
+        <a href="https://calendar.google.com/calendar/u/0?cid=MmViNDVlNWU0MWUwZDM4Yzg4YzQ0OTAyMDczMzNmNjc0NDQwOTA3ZWM0YzE5M2I2ZGU0NjkzZTQ1YzU0MzgyMUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t" target="_blank" rel="noreferrer"><span>02</span><strong>Calendrier</strong><small>Google Agenda <span data-icon="external-link"></span></small></a>
+        <a href="https://1drv.ms/x/c/339f97857d6993e7/IQBGoKMz5WzKQbTa9L4u_ZAYAZ5mIUL807s51vrcFDVk3dQ?e=PnYQcn" target="_blank" rel="noreferrer"><span>03</span><strong>Budget original</strong><small>Excel en ligne <span data-icon="external-link"></span></small></a>
+        <a href="https://www.youtube.com/watch?v=0PtBhmRqBPc" target="_blank" rel="noreferrer"><span>04</span><strong>Embrun et les environs</strong><small>Vidéo YouTube <span data-icon="external-link"></span></small></a>
+        <a href="https://www.youtube.com/watch?v=pYZUeqefw-w" target="_blank" rel="noreferrer"><span>05</span><strong>Voir le plan d'eau</strong><small>Vidéo YouTube <span data-icon="external-link"></span></small></a>
+        <a href="https://docs.google.com/document/d/1krp5eV-GFet18ZUpQHwsuz8Mv-fkHlBARXVamydu0OU/edit?tab=t.0" target="_blank" rel="noreferrer"><span>06</span><strong>Document partagé</strong><small>Google Docs · modifiable <span data-icon="external-link"></span></small></a>
+        <a class="link-featured" href="https://drive.google.com/uc?export=download&amp;id=1-Yaetbn5HIi3vJjiVDCbtzbM-5pbMe40" target="_blank" rel="noreferrer"><span>07</span><strong>Télécharger la présentation</strong><small>Présentation PDF <span data-icon="arrow-down"></span></small></a>
       </div>
     </section>
 
@@ -311,23 +315,23 @@
 
   <footer>
     <div><span class="brand-mark">Z</span><strong>Embrun 2027</strong></div>
-    <p>Fait avec beaucoup trop d'avance, comme il se doit.</p>
+    <div class="footer-info"><p>Fait avec beaucoup trop d'avance, comme il se doit.</p><nav aria-label="Informations du site"><a href="confidentialite.html">Confidentialité</a><a href="mentions-legales.html">Mentions légales</a></nav></div>
   </footer>
 
   <nav class="mobile-nav" aria-label="Navigation principale">
-    <a href="#accueil"><span>⌂</span>Accueil</a>
-    <a href="#programme"><span>◷</span>Programme</a>
-    <a href="#budget"><span>€</span>Budget</a>
-    <a href="#liens"><span>↗</span>Liens</a>
+    <a href="#accueil"><span data-icon="house"></span>Accueil</a>
+    <a href="#programme"><span data-icon="calendar"></span>Programme</a>
+    <a href="#budget"><span data-icon="euro"></span>Budget</a>
+    <a href="#liens"><span data-icon="external-link"></span>Liens</a>
   </nav>
-  <button class="back-to-top" id="backToTop" type="button" aria-label="Retour en haut">↑</button>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="Retour en haut"><span data-icon="arrow-up"></span></button>
 
   <dialog id="nameDialog" class="welcome-dialog">
     <form id="nameForm">
       <div class="welcome-mark">Z</div>
       <p class="eyebrow dark">Bienvenue dans le carnet</p>
       <h3>Comment tu<br>t'appelles ?</h3>
-      <p>Ton prénom permettra au groupe de savoir qui a apporté les dernières modifications.</p>
+      <p>Ton prénom permet de reconnaître tes modifications. Tu peux utiliser un surnom. <a href="confidentialite.html">Voir les données utilisées</a>.</p>
       <label>Ton prénom
         <input id="firstName" name="firstName" type="text" minlength="2" maxlength="24" autocomplete="given-name" required>
       </label>
@@ -337,7 +341,7 @@
 
   <dialog id="editDialog">
     <form method="dialog">
-      <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer">×</button></div>
+      <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer"><span data-icon="x"></span></button></div>
       <p>Les changements sont enregistrés sur cet appareil et synchronisés avec le carnet partagé dès qu'une connexion est disponible.</p>
       <p class="last-editor" id="lastEditor">Le premier changement partagé apparaîtra ici.</p>
       <div class="dialog-actions">
@@ -356,9 +360,10 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="app.js?v=20260804-1"></script>
-  <script src="weather.js?v=20261011-1" defer></script>
-  <script src="map.js?v=20261011-1" defer></script>
+  <script src="icons.js?v=20261011-2"></script>
+  <script src="app.js?v=20261011-2"></script>
+  <script src="weather.js?v=20261011-2" defer></script>
+  <script src="map.js?v=20261011-2" defer></script>
   <script type="module" src="firebase-sync.js?v=20260804-1"></script>
 </body>
 </html>
