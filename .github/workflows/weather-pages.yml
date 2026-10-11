@@ -1,0 +1,69 @@
+name: Météo et GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+# Un dépôt privé est bloqué AVANT d'allouer une machine.
+# Aucun abonnement, cache Actions ou machine payante.
+permissions:
+  contents: read
+
+concurrency:
+  group: weather-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Vérifier le cache et les replis
+        run: node --test tests/weather.test.mjs
+      - name: Actualiser Embrun
+        env:
+          MET_NO_USER_AGENT: LesZigotosEmbrun/1.0 https://github.com/tickytakaboom-ux/vacances
+        run: node scripts/update-weather.mjs
+      - name: Conserver la dernière météo connue
+        run: |
+          git add data/weather.json
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Actualiser la météo d'Embrun"
+            git push origin HEAD:main
+          fi
+      - uses: actions/configure-pages@v5
+      - name: Préparer uniquement les fichiers publics
+        run: |
+          mkdir -p .preview/site
+          cp index.html app.js firebase-sync.js styles.css weather.js weather.css site.webmanifest .preview/site/
+          cp -r assets data .preview/site/
+          touch .preview/site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .preview/site
+          retention-days: 1
+      - name: Publier
+        id: deployment
+        uses: actions/deploy-pages@v4

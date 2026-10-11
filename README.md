@@ -23,3 +23,8 @@ Le bouton **Modifier** permet de changer le texte du programme et certaines pré
 - Ajouter le domaine GitHub Pages dans **Authentication > Settings > Authorized domains** si Firebase ne l'accepte pas automatiquement.
 
 Les visiteurs choisissent leur prénom au premier passage, puis sont connectés anonymement : aucun compte ni mot de passe n'est demandé. Chaque sauvegarde conserve le prénom, les sections modifiées et une copie du contenu dans la sous-collection Firestore `history`. Toute personne ayant accès au site peut modifier le carnet.
+
+## Météo Embrun
+
+Bloc compact, prévisions actualisées chaque heure et secours automatique, sans clé API.
+Voir [le guide météo](docs/weather.md) pour les tests et l’activation gratuite de GitHub Actions / Pages.

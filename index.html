@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260804-1">
+  <link rel="stylesheet" href="weather.css?v=20261011-1">
 </head>
 <body>
   <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
@@ -93,6 +94,15 @@
         <article class="stat-card"><strong id="statPeople">7</strong><span>zigotos</span></article>
         <article class="stat-card"><strong>1</strong><span>semaine</span></article>
         <article class="stat-card accent"><strong id="statPrice">344,48 € + 28,57 € = 373,05 €</strong><span>budget + caution par personne</span></article>
+      </div>
+    </section>
+
+    <section class="section weather-section" id="weather" aria-labelledby="weatherTitle">
+      <div class="weather-card">
+        <div class="weather-heading"><h2 id="weatherTitle">Météo à Embrun</h2><span>Lac et montagnes</span></div>
+        <div class="weather-content"></div>
+        <p class="weather-status" role="status">Chargement des prévisions…</p>
+        <small class="weather-credit"></small>
       </div>
     </section>
 
@@ -323,6 +333,7 @@
   </dialog>
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js?v=20260804-1"></script>
+  <script src="weather.js?v=20261011-1" defer></script>
   <script type="module" src="firebase-sync.js?v=20260804-1"></script>
 </body>
 </html>
