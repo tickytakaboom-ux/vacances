@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "center": {
+    "latitude": 44.5518881,
+    "longitude": 6.4768568,
+    "radiusKm": 4
+  },
+  "checkedAt": "2026-10-11T16:48:47.562Z",
+  "groups": {
+    "restaurants": {
+      "status": "fresh",
+      "fetchedAt": "2026-10-11T16:03:53.221Z",
+      "nextAttemptAt": "2026-10-12T16:03:53.221Z",
+      "places": [
+        {
+          "id": "node/1893360150",
+          "name": "Le Margharita",
+          "category": "restaurants",
+          "latitude": 44.5512834,
+          "longitude": 6.4783918,
+          "address": "Avenue Justin Gras 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/72510447",
+          "name": "Le Rooftop",
+          "category": "restaurants",
+          "latitude": 44.5512803,
+          "longitude": 6.4731915,
+          "address": "15 Avenue du Lac 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/8765704583",
+          "name": "Restaurant de l'hôtel Le Lac",
+          "category": "restaurants",
+          "latitude": 44.5512697,
+          "longitude": 6.4825646,
+          "address": "Avenue du Lac 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/1893264683",
+          "name": "Pizza La Montagne",
+          "category": "restaurants",
+          "latitude": 44.5561132,
+          "longitude": 6.480539,
+          "address": "Rue de la Levée 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/72513995",
+          "name": "La truite qui parle",
+          "category": "restaurants",
+          "latitude": 44.5523307,
+          "longitude": 6.4844326,
+          "address": "Impasse des Merisiers 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/72514181",
+          "name": "Hôtel-Restaurant La Robéyère",
+          "category": "restaurants",
+          "latitude": 44.5590002,
+          "longitude": 6.4869651,
+          "address": "11-15 avenue Justin Gras 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6614903743",
+          "name": "Le Jasmin",
+          "category": "restaurants",
+          "latitude": 44.5630591,
+          "longitude": 6.4929604,
+          "address": "15 Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/7888002885",
+          "name": "Crêperie Le taboo",
+          "category": "restaurants",
+          "latitude": 44.5633804,
+          "longitude": 6.4937935,
+          "address": "34 Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6613051962",
+          "name": "Restaurant Les Curieux Gourmands",
+          "category": "restaurants",
+          "latitude": 44.56342,
+          "longitude": 6.4938995,
+          "address": "50 Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6612064799",
+          "name": "L’Ogow",
+          "category": "restaurants",
+          "latitude": 44.5634507,
+          "longitude": 6.4945837,
+          "address": "Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/12206558171",
+          "name": "Ista",
+          "category": "restaurants",
+          "latitude": 44.5635644,
+          "longitude": 6.4946742,
+          "address": "85 Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/4985478322",
+          "name": "La Farandole du Goût",
+          "category": "restaurants",
+          "latitude": 44.5638665,
+          "longitude": 6.4942863,
+          "address": "Rue Saint-Donnât 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/66294643",
+          "name": "l'edonai",
+          "category": "restaurants",
+          "latitude": 44.5386533,
+          "longitude": 6.4925533,
+          "address": "Route de Pra Fouran 05200 Baratier",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/10147925953",
+          "name": "Le cinq",
+          "category": "restaurants",
+          "latitude": 44.5647915,
+          "longitude": 6.4950327,
+          "address": "7 rue des Écuries 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/8902008402",
+          "name": "Fleur 2 Courgettes",
+          "category": "restaurants",
+          "latitude": 44.5635726,
+          "longitude": 6.4967224,
+          "address": "2 Place Dongois 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/1728784133",
+          "name": "Cap 26",
+          "category": "restaurants",
+          "latitude": 44.5644021,
+          "longitude": 6.496019,
+          "address": "Place Barthelon 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/5891166177",
+          "name": "L'épicerie du terroir",
+          "category": "restaurants",
+          "latitude": 44.5643023,
+          "longitude": 6.4962848,
+          "address": "Place Barthelon 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/664901004",
+          "name": "Le Co'case",
+          "category": "restaurants",
+          "latitude": 44.5650708,
+          "longitude": 6.4953059,
+          "address": "Place Général Dosse 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6612874271",
+          "name": "L'émulsion des saveurs",
+          "category": "restaurants",
+          "latitude": 44.5648387,
+          "longitude": 6.4957863,
+          "address": "16 Place du General Dosse 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/3053677793",
+          "name": "Ô p'tit bistrot",
+          "category": "restaurants",
+          "latitude": 44.5387027,
+          "longitude": 6.4959849,
+          "address": "Place du Village 05200 Baratier",
+          "source": "OpenStreetMap / Photon"
+        }
+      ]
+    },
+    "courses": {
+      "status": "fresh",
+      "fetchedAt": "2026-10-11T16:03:55.349Z",
+      "nextAttemptAt": "2026-10-12T16:03:55.349Z",
+      "places": [
+        {
+          "id": "way/66295249",
+          "name": "Intermarché",
+          "category": "courses",
+          "latitude": 44.5469078,
+          "longitude": 6.4812681,
+          "address": "Route des Portes du Lac 05200 Baratier",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/1017963929",
+          "name": "Biocoop",
+          "category": "courses",
+          "latitude": 44.5495708,
+          "longitude": 6.4858477,
+          "address": "50 Route d'Entraigues 05200 Baratier",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/534903677",
+          "name": "U Drive",
+          "category": "courses",
+          "latitude": 44.550267,
+          "longitude": 6.4871692,
+          "address": "05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/72514245",
+          "name": "Super U",
+          "category": "courses",
+          "latitude": 44.5504027,
+          "longitude": 6.4878034,
+          "address": "Route de Vachères 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "way/625119133",
+          "name": "Supeco",
+          "category": "courses",
+          "latitude": 44.562582,
+          "longitude": 6.4928805,
+          "address": "Rue Pierre et Marie Curie 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6612870035",
+          "name": "A la Source Bio",
+          "category": "courses",
+          "latitude": 44.565075,
+          "longitude": 6.4961802,
+          "address": "Place Général Dosse 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/5186437251",
+          "name": "Spar",
+          "category": "courses",
+          "latitude": 44.566673,
+          "longitude": 6.4979509,
+          "address": "1 Avenue Charles de Gaulle 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        }
+      ]
+    },
+    "sorties": {
+      "status": "fresh",
+      "fetchedAt": "2026-10-11T16:03:57.295Z",
+      "nextAttemptAt": "2026-10-12T16:03:57.295Z",
+      "places": [
+        {
+          "id": "node/5028495557",
+          "name": "La Ferme Décou'Verte",
+          "category": "sorties",
+          "latitude": 44.5374972,
+          "longitude": 6.4830658,
+          "address": "Chemin de Crots 05200 Baratier",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/5447775323",
+          "name": "Agence Jennifair",
+          "category": "sorties",
+          "latitude": 44.563262,
+          "longitude": 6.4940854,
+          "address": "54 Rue de la Liberté 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
+          "id": "node/6447616803",
+          "name": "Paint Ball",
+          "category": "sorties",
+          "latitude": 44.5332052,
+          "longitude": 6.4645935,
+          "address": "05200 Crots",
+          "source": "OpenStreetMap / Photon"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "places": [
+    {
+      "id": "rooftop",
+      "name": "Le Rooftop",
+      "address": "Route de Chadenas, Avenue du Lac, 05200 Embrun",
+      "latitude": 44.5512803,
+      "longitude": 6.4731915,
+      "osmId": "way/72510447",
+      "sourceUrl": "https://www.openstreetmap.org/way/72510447"
+    },
+    {
+      "id": "mont-dauphin",
+      "name": "Mont-Dauphin",
+      "address": "05600 Mont-Dauphin",
+      "note": "Repère au centre du village fortifié.",
+      "latitude": 44.66862,
+      "longitude": 6.62328,
+      "osmId": "relation/366224",
+      "sourceUrl": "https://www.openstreetmap.org/relation/366224"
+    },
+    {
+      "id": "marmottes",
+      "name": "Sentier des Marmottes",
+      "address": "05600 Eygliers",
+      "latitude": 44.6713,
+      "longitude": 6.6189,
+      "sourceUrl": "https://www.marmotteygliers.com/pages/qui-sommes-nous.html",
+      "note": "Repère d’accès au sentier, d’après l’association locale."
+    },
+    {
+      "id": "mini-golf",
+      "name": "Mini-golf du plan d’eau d’Embrun",
+      "address": "Avenue du Lac, 05200 Embrun",
+      "latitude": 44.5508856,
+      "longitude": 6.4786132,
+      "osmId": "way/130397992",
+      "sourceUrl": "https://www.openstreetmap.org/way/130397992"
+    },
+    {
+      "id": "fontaine-petrifiante",
+      "name": "Fontaine Pétrifiante",
+      "address": "05600 Réotier",
+      "latitude": 44.6678445,
+      "longitude": 6.6004343,
+      "sourceUrl": "https://www.envie-de-queyras.com/guide/poi/fontaine-petrifiante-de-reotier/"
+    },
+    {
+      "id": "fontaine-ours",
+      "name": "Fontaine de l’Ours",
+      "address": "Boscodon, 05200 Crots",
+      "note": "Fontaine située sur le sentier des Pyramides à Boscodon.",
+      "verificationUrl": "https://www.oduch.fr/Paysage/Fontaine-de-l-ours",
+      "latitude": 44.4878876,
+      "longitude": 6.4494554,
+      "osmId": "node/2395210063",
+      "sourceUrl": "https://www.openstreetmap.org/node/2395210063"
+    },
+    {
+      "id": "les-orres",
+      "name": "Les Orres · Station 1650",
+      "address": "Centre station 1650, 05200 Les Orres",
+      "latitude": 44.49311,
+      "longitude": 6.55641,
+      "sourceUrl": "https://www.lesorres.com/sites/default/files/documents/guide-heb-orres-2022-bd.pdf",
+      "note": "Repère au centre station 1650, pas dans le village."
+    },
+    {
+      "id": "crots-branches",
+      "name": "Crots Branches Accrobranche",
+      "address": "61 allée de la Vèze, 05200 Crots",
+      "latitude": 44.5333,
+      "longitude": 6.46669,
+      "sourceUrl": "https://www.crotsbranches.fr/",
+      "note": "Repère fourni par le site du parc."
+    },
+    {
+      "id": "aquaparc",
+      "name": "Aquaparc Embrun",
+      "address": "Avenue du Lac, 05200 Embrun",
+      "latitude": 44.5496017,
+      "longitude": 6.476418,
+      "osmId": "way/514742377",
+      "sourceUrl": "https://www.openstreetmap.org/way/514742377"
+    },
+    {
+      "id": "camping",
+      "name": "Camping Municipal de La Clapière",
+      "address": "Le Plan d’Eau, 05200 Embrun",
+      "latitude": 44.5518881,
+      "longitude": 6.4768568,
+      "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Camping%20La%20Clapi%C3%A8re%2C%20Embrun&format=jsonv2&limit=3&countrycodes=fr&addressdetails=1",
+      "osmId": "way/161082149"
+    }
+  ]
+}

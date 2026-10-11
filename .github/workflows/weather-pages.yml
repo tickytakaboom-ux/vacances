@@ -39,25 +39,27 @@ jobs:
         with:
           node-version: '24'
       - name: Vérifier le cache et les replis
-        run: node --test tests/weather.test.mjs
+        run: node --test tests/weather.test.mjs tests/places.test.mjs
       - name: Actualiser Embrun
         env:
           MET_NO_USER_AGENT: LesZigotosEmbrun/1.0 https://github.com/tickytakaboom-ux/vacances
         run: node scripts/update-weather.mjs
-      - name: Conserver la dernière météo connue
+      - name: Actualiser les lieux alentour (cache journalier)
+        run: node scripts/update-places.mjs
+      - name: Conserver les dernières données connues
         run: |
-          git add data/weather.json
+          git add data/weather.json data/nearby-places.json
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Actualiser la météo d'Embrun"
+            git commit -m "Actualiser les données d'Embrun"
             git push origin HEAD:main
           fi
       - uses: actions/configure-pages@v5
       - name: Préparer uniquement les fichiers publics
         run: |
           mkdir -p .preview/site
-          cp index.html app.js firebase-sync.js styles.css weather.js weather.css site.webmanifest .preview/site/
+          cp index.html app.js firebase-sync.js styles.css weather.js weather.css map.js map.css site.webmanifest .preview/site/
           cp -r assets data .preview/site/
           touch .preview/site/.nojekyll
       - uses: actions/upload-pages-artifact@v3

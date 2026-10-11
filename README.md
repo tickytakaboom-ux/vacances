@@ -28,3 +28,7 @@ Les visiteurs choisissent leur prénom au premier passage, puis sont connectés 
 
 Bloc compact, prévisions actualisées chaque heure et secours automatique, sans clé API.
 Voir [le guide météo](docs/weather.md) pour les tests et l’activation gratuite de GitHub Actions / Pages.
+
+## Carte du voyage
+
+Carte compacte avec les dix lieux choisis et une sélection alentour actualisée chaque jour. Voir [la documentation de la carte](docs/map.md) pour les sources, le cache, les tests et la publication.

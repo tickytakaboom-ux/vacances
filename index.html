@@ -14,6 +14,8 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260804-1">
   <link rel="stylesheet" href="weather.css?v=20261011-1">
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="map.css?v=20261011-1">
 </head>
 <body>
   <div class="site-loader" id="siteLoader" role="status" aria-live="polite" aria-label="Chargement du carnet">
@@ -51,7 +53,7 @@
         <p class="hero-copy">Une semaine entre lac et montagnes, à sept, au Camping de la Clapière.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#programme">Voir le programme</a>
-          <a class="button button-ghost" href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noreferrer">Ouvrir la carte ↗</a>
+          <a class="button button-ghost" href="#carte">Voir la carte ↓</a>
         </div>
       </div>
       <div class="hero-card">
@@ -73,6 +75,7 @@
     <nav class="section-nav" aria-label="Sommaire de la page">
       <a href="#programme">Programme</a>
       <a href="#activites">Activités</a>
+      <a href="#carte">Carte</a>
       <a href="#idees">Idées</a>
       <a href="#budget">Budget</a>
       <a href="#checklist">À emporter</a>
@@ -123,6 +126,27 @@
         </div>
         <div class="activity-grid" id="activityGrid"></div>
       </div>
+    </section>
+
+    <section class="section trip-map-section" id="carte" data-tile-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png">
+      <div class="trip-map-heading"><div><p class="eyebrow dark">Nos repères</p><h2>Le coin des Zigotos</h2></div><p>Nos 10 lieux choisis, et quelques bonnes adresses autour du camping.</p></div>
+      <div class="trip-map-card">
+        <div class="trip-map-toolbar">
+          <div class="trip-map-filters" role="group" aria-label="Lieux alentour">
+            <button type="button" data-map-filter="all" aria-pressed="true">Tout</button>
+            <button type="button" data-map-filter="restaurants" aria-pressed="true">Restaurants</button>
+            <button type="button" data-map-filter="courses" aria-pressed="true">Courses</button>
+            <button type="button" data-map-filter="sorties" aria-pressed="true">Sorties</button>
+          </div>
+          <div class="trip-map-actions"><button type="button" id="mapOverview" disabled>Nos 10 lieux</button><button type="button" id="expandTripMap" aria-expanded="false" disabled>Agrandir ↗</button></div>
+        </div>
+        <div class="trip-map-canvas" id="tripMapViewport" aria-label="Carte des lieux du voyage">
+          <div class="trip-map-gate"><span aria-hidden="true">⌖</span><h3>Du lac aux montagnes</h3><p>Retrouve nos lieux et les adresses alentour.</p><button type="button" class="button button-dark" id="loadTripMap">Afficher la carte</button></div>
+        </div>
+        <div class="trip-map-footer"><div class="trip-map-legend"><span><i class="chosen"></i>Nos lieux choisis</span><span><i class="nearby"></i><span id="nearbyCount">Lieux alentour</span></span></div><p class="trip-map-status" role="status">Chargement des lieux…</p></div>
+      </div>
+      <p class="trip-map-note">Sélection alentour actualisée chaque jour · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> / <a href="https://photon.komoot.io/" target="_blank" rel="noopener noreferrer">Photon</a> · <a href="https://maps.app.goo.gl/bt9owt7vjwLWqfGK6" target="_blank" rel="noopener noreferrer">Notre carte Google ↗</a></p>
+      <details class="trip-map-list"><summary>Voir nos 10 lieux et les itinéraires</summary><ol class="trip-map-places"></ol></details>
     </section>
 
     <section class="section ideas-section" id="idees">
@@ -334,6 +358,7 @@
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js?v=20260804-1"></script>
   <script src="weather.js?v=20261011-1" defer></script>
+  <script src="map.js?v=20261011-1" defer></script>
   <script type="module" src="firebase-sync.js?v=20260804-1"></script>
 </body>
 </html>
