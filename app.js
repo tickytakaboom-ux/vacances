@@ -7,7 +7,7 @@ const initialData = {
   ideasVersion: 1,
   shoppingVersion: 1,
   text: {
-    intro: "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.",
+    intro: "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.",
     camping: "Un camping 4 étoiles au bord du plan d'eau d'Embrun, entre lac et montagnes. Plage et loisirs sont accessibles à pied."
   },
   textAuthors: {},
@@ -74,7 +74,6 @@ let editTextSnapshot = null;
 let activeListTab = localStorage.getItem(listTabKey) || "shared";
 let personalChecklist = loadPersonalChecklist();
 let activeActivityIndex = null;
-let showAllIdeas = false;
 let showAllFaqs = false;
 const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
@@ -144,7 +143,8 @@ function normalizeData(source) {
     normalized.activities = structuredClone(initialData.activities);
   }
   // Mettre à jour seulement les textes par défaut, sans toucher aux textes du groupe.
-  if (normalized.text?.intro === "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine \u2014 ou ne rien faire du tout.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.";
+  if (normalized.text?.intro === "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine \u2014 ou ne rien faire du tout.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.";
+  if (normalized.text?.intro === "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.";
   normalized.faqs = normalized.faqs.map(faq => faq[0] === "Comment fait-on les courses ?" && faq[1] === "Dans un magasin 👍" ? [faq[0], "On prépare la liste ensemble dans l’onglet Courses."] : faq);
   normalized.activities = normalized.activities.map(activity => [activity[0] || "✨", activity[1] || "Activité", activity[2] || "", activity[3] || "", activity[4] || "", activity[5] || ""]);
   if (source?.faqVersion !== initialData.faqVersion) {
@@ -205,7 +205,6 @@ function render() {
   renderShoppingList();
   updateListTabs();
   renderAssistanceContacts();
-  renderIdeas();
   updateBudget();
 }
 
@@ -240,40 +239,6 @@ function openActivityDialog(index) {
   document.querySelector("#activityPrice").value = activity[4] || "";
   document.querySelector("#activityNotes").value = activity[3] || "";
   document.querySelector("#activityDialog").showModal();
-}
-
-function renderIdeas() {
-  const list = document.querySelector("#ideasList");
-  document.querySelector("#ideasShowAll").hidden = true;
-  document.querySelector("#ideasCount").textContent = `${data.ideas.length} idée${data.ideas.length > 1 ? "s" : ""}`;
-  if (!data.ideas.length) {
-    list.innerHTML = '<p class="ideas-empty">Aucune idée pour l’instant. À vous de lancer le mouvement.</p>';
-    return;
-  }
-  const displayedIdeas = showAllIdeas ? data.ideas : data.ideas.slice(0, 4);
-  const ideasShowAll = document.querySelector("#ideasShowAll");
-  ideasShowAll.hidden = data.ideas.length <= 4;
-  ideasShowAll.textContent = showAllIdeas ? "Réduire la liste" : `Voir les ${data.ideas.length} idées`;
-  list.innerHTML = displayedIdeas.map(idea => `<article class="idea-card${new Date(idea.createdAt).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(idea.id)}"><p>${escapeHTML(idea.text)}</p><footer><span>${idea.author ? `${escapeHTML(idea.author)} · ` : ""}${escapeHTML(new Date(idea.createdAt).toLocaleDateString("fr-FR"))}</span><div><button class="idea-edit" type="button" aria-label="Modifier cette idée">${window.TripIcons.icon("pencil")}</button><button class="idea-delete" type="button" aria-label="Supprimer cette idée">${window.TripIcons.icon("x")}</button></div></footer></article>`).join("");
-  list.querySelectorAll(".idea-edit").forEach(button => button.addEventListener("click", async event => {
-    const idea = data.ideas.find(item => item.id === event.target.closest(".idea-card").dataset.id);
-    const nextText = prompt("Modifier cette idée :", idea.text)?.trim();
-    if (!nextText || nextText === idea.text) return;
-    idea.text = nextText;
-    idea.author = currentUserName();
-    idea.createdAt = new Date().toISOString();
-    renderIdeas();
-    const synced = await saveData();
-    showToast(synced ? "Idée modifiée pour tout le monde" : "Idée modifiée sur cet appareil");
-  }));
-  list.querySelectorAll(".idea-delete").forEach(button => button.addEventListener("click", async event => {
-    const id = event.target.closest(".idea-card").dataset.id;
-    if (!confirm("Supprimer cette idée ?")) return;
-    data.ideas = data.ideas.filter(item => item.id !== id);
-    renderIdeas();
-    const synced = await saveData();
-    showToast(synced ? "Idée supprimée pour tout le monde" : "Idée supprimée sur cet appareil");
-  }));
 }
 
 function renderAssistanceContacts() {
@@ -476,7 +441,7 @@ function showToast(message) {
 
 function hasUnsavedDrafts() {
   if (editing) return true;
-  if (["#ideaInput", "#checklistInput", "#personalInput", "#shoppingInput"].some(selector => document.querySelector(selector).value.trim())) return true;
+  if (["#checklistInput", "#personalInput", "#shoppingInput"].some(selector => document.querySelector(selector).value.trim())) return true;
   return [...document.querySelectorAll(".assistance-card")].some(form => {
     const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
     if (!contact) return false;
@@ -485,7 +450,6 @@ function hasUnsavedDrafts() {
 }
 
 document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
-document.querySelector("#ideasShowAll").addEventListener("click", () => { showAllIdeas = !showAllIdeas; renderIdeas(); });
 document.querySelector("#faqShowAll").addEventListener("click", () => { showAllFaqs = !showAllFaqs; render(); });
 document.querySelector("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
 window.addEventListener("scroll", () => document.querySelector("#backToTop").classList.toggle("visible", scrollY > 700), { passive: true });
@@ -566,17 +530,6 @@ document.querySelector("#activityForm").addEventListener("submit", async event =
   showToast(synced ? "Activité mise à jour pour tout le monde" : "Activité sauvegardée sur cet appareil");
 });
 document.querySelector("#closeActivityDialog").addEventListener("click", () => document.querySelector("#activityDialog").close());
-document.querySelector("#ideaForm").addEventListener("submit", async event => {
-  event.preventDefault();
-  const input = document.querySelector("#ideaInput");
-  const text = input.value.trim().replace(/\s+/g, " ");
-  if (!text) return;
-  data.ideas.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, author: currentUserName(), createdAt: new Date().toISOString() });
-  input.value = "";
-  renderIdeas();
-  const synced = await saveData();
-  showToast(synced ? "Idée ajoutée pour tout le monde" : "Idée ajoutée sur cet appareil");
-});
 document.querySelector("#editButton").addEventListener("click", () => editing ? setEditing(false) : document.querySelector("#editDialog").showModal());
 document.querySelector("#toggleEdit").addEventListener("click", () => { document.querySelector("#editDialog").close(); setEditing(true); });
 let adminTapCount = 0;

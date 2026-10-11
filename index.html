@@ -22,10 +22,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261011-2">
-  <link rel="stylesheet" href="weather.css?v=20261011-2">
+  <link rel="stylesheet" href="styles.css?v=20261011-3">
+  <link rel="stylesheet" href="weather.css?v=20261011-3">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="map.css?v=20261011-2">
+  <link rel="stylesheet" href="map.css?v=20261011-3">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -80,7 +80,6 @@
       <a href="#programme">Programme</a>
       <a href="#activites">Activités</a>
       <a href="#carte">Carte</a>
-      <a href="#idees">Idées</a>
       <a href="#budget">Budget</a>
       <a href="#checklist">À emporter</a>
       <a href="#camping">Camping</a>
@@ -95,7 +94,7 @@
         <h2>Notre semaine<br>au bord du lac.</h2>
       </div>
       <div class="editable-block">
-        <p class="lead editable" data-key="intro">On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.</p>
+        <p class="lead editable" data-key="intro">On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.</p>
       </div>
       <div class="stat-grid">
         <article class="stat-card"><strong id="statPeople">7</strong><span>zigotos</span></article>
@@ -153,21 +152,7 @@
       <details class="trip-map-list"><summary>Voir nos 10 lieux et les itinéraires</summary><ol class="trip-map-places"></ol></details>
     </section>
 
-    <section class="section ideas-section" id="idees">
-      <div class="ideas-heading">
-        <div><p class="eyebrow dark">À proposer au groupe</p><h2>Idées en attente.</h2></div>
-        <span id="ideasCount">0 idée</span>
-      </div>
-      <form class="idea-form" id="ideaForm">
-        <label for="ideaInput">Une activité, une sortie, une adresse…</label>
-        <textarea id="ideaInput" maxlength="240" rows="4" placeholder="Écrire une idée pour le groupe" required></textarea>
-        <button type="submit">Ajouter l'idée <span data-icon="plus"></span></button>
-      </form>
-      <div class="ideas-list" id="ideasList"></div>
-      <button class="show-more" id="ideasShowAll" type="button" hidden>Voir toutes les idées</button>
-    </section>
-
-    <section class="section" id="budget">
+<section class="section" id="budget">
       <div class="section-heading budget-heading">
         <div>
           <p class="eyebrow dark">Budget prévisionnel</p>
@@ -360,10 +345,10 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="icons.js?v=20261011-2"></script>
-  <script src="app.js?v=20261011-2"></script>
-  <script src="weather.js?v=20261011-2" defer></script>
-  <script src="map.js?v=20261011-2" defer></script>
+  <script src="icons.js?v=20261011-3"></script>
+  <script src="app.js?v=20261011-3"></script>
+  <script src="weather.js?v=20261011-3" defer></script>
+  <script src="map.js?v=20261011-3" defer></script>
   <script type="module" src="firebase-sync.js?v=20260804-1"></script>
 </body>
 </html>
