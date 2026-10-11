@@ -16,9 +16,9 @@ Périmètre validé : particulier en France, vacances entre amis, aucun salarié
 | 8. Tiers | Google Fonts remplacé par quatre fichiers WOFF2 locaux et licences SIL OFL. Firebase reste chargé depuis Google et utilise les services Google. Carte OSM à l’ouverture seulement ; Leaflet et Lucide locaux. Open-Meteo/MET Norway/Photon interrogés côté workflow, pas avec les données des visiteurs. Documents et vidéos restent des liens, sans intégration. |
 | 9. Accessibilité | Onglets avec identifiants, panneau associé, aria-selected, tabulation unique et touches flèches/Début/Fin. Illustration dotée de role=img. Ajustements des cartes budget et titres d’activités pour les vraies polices sur mobile. Focus et réduction d’animations conservés. Contrôles partiels, aucune déclaration de conformité inventée. |
 | 10. Moteurs et IA | Les quatre pages HTML portent robots=noindex,nofollow,noarchive. Pas de llms.txt, sitemap promotionnel ou données structurées de référencement. Aucun blocage global des moteurs qui les empêcherait de lire noindex. La consigne n’est pas un contrôle d’accès et tous les robots ne la respectent pas. |
-| 11. Contenu | Pas de faux avis ou promesses commerciales identifiés. Tarifs décrits comme estimations à confirmer. Notices Lucide, Leaflet et nouvelles licences des fontes conservées. Droits sur logo et illustration existants à confirmer ; rien remplacé sur une supposition. |
-| 12. Contact et footer | Même navigation d’information sur les quatre pages : confidentialité, mentions et règles ; retour au carnet sur les pages secondaires. Aucun faux e-mail ni téléphone d’éditeur. Le téléphone du camping n’est pas présenté comme celui de l’éditeur. Contact réel encore manquant. |
-| 13. Risques spécifiques | Connexion anonyme et mode administrateur côté navigateur ne réservent pas les données aux amis. Historique sans expiration et sans suppression utilisateur. Ces limites sont documentées ; elles ne sont pas corrigées techniquement car le périmètre choisi exclut les permissions Firebase. Les règles réellement déployées restent à vérifier. |
+| 11. Contenu | Pas de faux avis ou promesses commerciales identifiés. Tarifs décrits comme estimations à confirmer. Notices Lucide, Leaflet et nouvelles licences des fontes conservées. Origine du logo et des illustrations confirmée par le responsable : créations pour ce site. Aucun auteur ni titulaire de droits inventé. |
+| 12. Contact et footer | Même navigation d’information sur les quatre pages : confidentialité, mentions et règles ; retour au carnet sur les pages secondaires. Aucun faux e-mail ni téléphone d’éditeur. Le téléphone du camping n’est pas présenté comme celui de l’éditeur. Contact fourni par le responsable : julwan@icloud.com, ajouté aux trois pages. La réception des messages a été confirmée par le responsable. |
+| 13. Risques spécifiques | Connexion anonyme et mode administrateur côté navigateur ne réservent pas les données aux amis. Historique sans expiration et sans suppression utilisateur. Ces limites sont documentées ; elles ne sont pas corrigées techniquement car le périmètre choisi exclut les permissions Firebase. Les règles copiées par le responsable depuis la console le 11 octobre 2026 correspondent au fichier firestore.rules. Pas de contrôle direct du projet cloud par l’assistant. |
 
 ## Fichiers créés ou modifiés pour ce chantier
 
@@ -48,13 +48,13 @@ firestore.rules et firebase-sync.js ne sont pas modifiés par ce chantier. Aucun
 
 ## À FAIRE PAR UN HUMAIN
 
-1. Compléter les mentions avec l’identité et les coordonnées de l’éditeur ou vérifier avec l’hébergeur les conditions exactes de l’anonymat non professionnel ; renseigner le responsable de publication.
-2. Fournir un contact réel et fonctionnel, puis le reporter de façon cohérente dans les trois pages d’information. Le lien vers cette page n’est pas un moyen de contact tant que son champ est vide.
+1. Identité fournie et renseignée : Julian STEHLIN, éditeur et responsable de publication, également responsable du carnet. Préférence confirmée : ne pas publier le domicile ni le téléphone. Aucune coordonnée personnelle de ce type n’a été ajoutée. La procédure LCEN auprès de GitHub reste non confirmée : le responsable a transmis deux réponses générales de GitHub à ses demandes, sans procédure opérationnelle confirmée. Aucun envoi effectué par l’assistant et aucune conformité de cette option présumée.
+2. Contact fourni et reporté dans les trois pages : julwan@icloud.com. Réception des messages confirmée par le responsable le 11 octobre 2026.
 3. Vérifier dans les conditions du compte GitHub et Google les entités contractuelles, leurs adresses et le téléphone de l’hébergeur. Les anciennes adresses trouvées en ligne ne sont pas copiées sans preuve.
-4. Contrôler la région Firestore, les conditions de traitement/transfert applicables au compte et les règles effectivement déployées. Authentication fonctionne aux États-Unis d’après Google, quelle que soit la région Firestore.
-5. Fixer la durée de conservation du carnet, de l’historique et des comptes anonymes ; prévoir leur suppression administrative, y compris les copies détenues par le responsable. Les pages décrivent honnêtement l’absence actuelle de purge.
+4. Localisation Firestore indiquée par le responsable dans la console : eur3 (Europe), le 11 octobre 2026. Règles de la console fournies par le responsable et comparées au dépôt : correspondance exacte après normalisation des sauts de ligne. Vérifier encore les conditions de traitement/transfert applicables au compte. Authentication fonctionne aux États-Unis d’après Google, quelle que soit la région Firestore.
+5. Choix confirmé : conserver le carnet et l’historique Firebase comme souvenir après le séjour, sans date de suppression fixée. Suppression sur demande acceptée : Julian STEHLIN reçoit les demandes à julwan@icloud.com et traite le carnet, les anciennes copies Firebase concernées et ses copies administrées. Guide préparé dans docs/suppression-sur-demande.md ; aucune suppression réalisée. Conservation des comptes anonymes acceptée tant que le carnet reste utilisé, sans changement de fonctionnement. Réexamen prévu à l’arrêt d’utilisation ou lors d’une demande d’un participant. Aucun réglage Authentication modifié. Aucune purge n’a été configurée.
 6. Si l’usage sort du cadre strictement personnel/domestique, vérifier l’application du RGPD et documenter les bases juridiques, la nécessité de l’historique complet et les garanties de transfert. Ne pas utiliser l’accord aux règles comme un consentement fourre-tout.
-7. Confirmer les droits sur le logo et l’illustration déjà présents, et les tarifs/horaires auprès des établissements. Vérifier les permissions des documents externes avant de diffuser leurs liens.
+7. Origine des visuels confirmée : logo et illustrations créés pour le site. Accès aux documents externes confirmé par le responsable : uniquement les personnes autorisées (déclaration, sans inspection directe de leurs paramètres). Vérifier encore les tarifs/horaires auprès des établissements et conserver ces restrictions lors de nouveaux partages.
 8. Informer les amis des règles et des limites d’accès. Si une vraie protection devient nécessaire, elle demandera un chantier d’autorisations Firebase séparé, expressément exclu ici.
 9. Faire une relecture avec clavier et lecteur d’écran sur les appareils du groupe ; les contrôles effectués ne constituent pas un audit RGAA complet.
 10. Publier les changements seulement après finalisation des champs inconnus. Si la destination change vers une vente ou des données sensibles, réévaluer les obligations et faire relire les textes par un professionnel.
@@ -93,3 +93,45 @@ Le site est un projet sous /vacances/ sur tickytakaboom-ux.github.io. Un robots.
 ## Non applicables
 
 CGV, médiateur de consommation, rétractation, facturation, SIRET d’entreprise, politique de paiement, newsletter et marketing : pas de vente ni activité professionnelle déclarée. Bannière de consentement publicitaire/statistique : aucun outil de cette nature identifié dans le code, fonctionnalités locales limitées au carnet demandé. llms.txt, sitemap et référencement IA : contraire au souhait exprimé. Déclaration officielle de conformité accessibilité : pas de fondement établi pour ce carnet particulier, et aucun audit complet réalisé. Restriction réelle aux amis : utile pour protéger les données, mais non autorisée dans le périmètre choisi.
+
+- [Firestore : emplacements](https://firebase.google.com/docs/firestore/locations) : eur3, régions lecture/écriture en Belgique et aux Pays-Bas, région témoin en Finlande. La valeur du projet a été fournie par le responsable, sans accès direct à sa console.
+
+## Réponse GitHub et suite
+
+Le 11 octobre 2026, le responsable a fourni une réponse du support : renvoi vers les documents légaux et avertissement que les informations du compte ne satisfont pas nécessairement les exigences locales. Cette réponse ne confirme ni ne refuse une procédure LCEN. Relance ciblée préparée dans docs/relance-github-identification.md, non envoyée par l’assistant. Aucun domicile ou téléphone personnel ajouté. GitHub, Inc. et son adresse publiés dans les documents officiels ont été renseignés ; téléphone de l’hébergeur encore à confirmer. La possibilité d’omission des coordonnées personnelles reste non établie pour ce compte.
+
+## Deuxième réponse GitHub — 11 octobre 2026
+
+Le responsable a transmis une seconde réponse du support renvoyant vers les conditions et la politique de confidentialité, sans procédure opérationnelle de réception privée de son identité. Aucun refus explicite de la procédure, mais aucune confirmation non plus. Le point reste en attente ; aucune troisième relance préparée, aucune adresse personnelle ni téléphone ajoutés, aucune conformité de l’omission affirmée.
+
+Vérification Firebase poursuivie : la page officielle des conditions, modifiée le 24 septembre 2026, rattache Cloud Firestore et Firebase Authentication aux conditions Google Cloud. Elle présente également une déclaration d’usage lié à une activité professionnelle. Le carnet est déclaré personnel : l’adéquation des conditions acceptées par ce compte reste à clarifier, sans conclure à une interdiction ni changer le service. Source : https://firebase.google.com/terms ; acceptation par compte décrite sur https://firebase.google.com/support/faq . L’entité contractuelle Google ne doit pas être déduite d’anciens modèles génériques Google LLC : https://cloud.google.com/terms/google-entity . Aucun abonnement ni réglage cloud modifié.
+
+## Forfait Firebase confirmé
+
+Le 11 octobre 2026, le responsable indique que vacances-73619 utilise Spark. Spark est le forfait sans frais, sans facturation des dépassements tant que le projet reste sur ce forfait : les services soumis à quota peuvent être limités ou interrompus. Aucun passage à Blaze, compte de facturation, moyen de paiement ou changement cloud effectué. Source officielle vérifiée : https://firebase.google.com/docs/projects/billing/firebase-pricing-plans . La liaison d’un compte Cloud Billing ferait passer le projet à Blaze et n’entre pas dans le périmètre autorisé. Le forfait ne tranche pas la question séparée des conditions contractuelles applicables à l’usage personnel.
+
+- docs/suppression-sur-demande.md : guide adapté à contentJson et aux métadonnées du carnet et de son historique, sans opération cloud exécutée.
+
+## Vérification finale des prestataires — 11 octobre 2026
+
+Les documents officiels Google confirment que Firestore et Authentication relèvent actuellement des conditions Google Cloud, avec le Cloud Data Processing Addendum et son annexe européenne sur les transferts (solution reconnue ou clauses contractuelles types selon le cas). L’information publique a été précisée dans la confidentialité et le lien générique Firebase remplacé par le CDPA pertinent. Cela ne certifie pas l’application effective de ce contrat à ce compte personnel.
+
+La table Google Contracting Entity se fonde sur l’adresse de facturation ; sa ligne France indique Google Cloud France, 8 Rue de Londres, Paris 75009. Le compte est Spark sans entité contractuelle vérifiée : cette identité n’a pas été choisie arbitrairement dans les mentions. Demande unique préparée dans docs/demande-firebase-conditions.md pour préciser usage personnel autorisé, entité et garanties du projet existant. Canal privé publié par Firebase : https://firebase.google.com/support/troubleshooter/contact . Aucun message envoyé par l’assistant.
+
+GitHub : nom et adresse renseignés à partir de ses sources officielles ; téléphone de l’hébergeur et réception privée des éléments d’identité encore non confirmés après les deux réponses générales fournies. Aucune troisième relance ni changement d’hébergement.
+
+Décisions utilisateur finalisées : identité publique, e-mail fonctionnel, origine des visuels, documents externes à accès restreint, région eur3, règles actuelles comparées, Spark, conservation du carnet/de l’historique/des comptes anonymes et procédure sur demande. Aucun renseignement personnel supplémentaire n’est demandé pour la recherche. Points fournisseur encore en attente ; aucune conformité complète annoncée.
+
+Fichier ajouté : docs/demande-firebase-conditions.md, message regroupant les trois questions non tranchées.
+
+Sources : https://cloud.google.com/terms/google-entity ; https://firebase.google.com/terms ; https://firebase.google.com/support/privacy ; https://cloud.google.com/terms/data-processing-addendum .
+
+## Retour Firebase et décision à prendre
+
+Le responsable rapporte que Firebase renvoie aux conditions publiques, aux conditions de traitement et à la page de contact, sans fournir d’exception ou de confirmation spécifique d’usage personnel. Vérification officielle du 11 octobre 2026 : la page Firebase Terms of Service comporte une déclaration d’usage lié à une activité commerciale ou professionnelle et inclut Firestore et Firebase Authentication. Le projet est déclaré strictement personnel ; cet engagement ne correspond donc pas à l’usage décrit. Spark et les garanties de protection des données ne résolvent pas cette question distincte de conditions d’usage.
+
+Le chantier ne peut pas conclure à une configuration Firebase contractuellement validée pour ce carnet sur ces seuls éléments. Aucune fausse déclaration d’activité professionnelle, aucun passage à Blaze, changement d’hébergement ou migration de données effectué. La version contractuelle historiquement acceptée et son application éventuelle au compte ne sont pas attestées, et le support ne fournit pas de dérogation.
+
+Suite recommandée à examiner : remplacer le service de données partagées par un service gratuit dont les conditions permettent ce projet personnel, en conservant le site et les données/souvenirs. Cette migration dépasse le périmètre initial de corrections d’information sans changement Firebase et reste à définir avec le responsable. Toute alternative devra être vérifiée sur conditions d’usage, gratuité, quotas, persistance et possibilité d’export. Aucun fournisseur alternatif choisi ni compte créé.
+
+Source officielle : https://firebase.google.com/terms .
