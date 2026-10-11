@@ -62,7 +62,8 @@ const initialData = {
 const key = "zigotos-embrun-data-v1";
 const nameKey = "zigotos-first-name-v1";
 const adminKey = "zigotos-admin-v1";
-const lastVisitKey = "zigotos-last-visit-v1";
+// Migration ciblée : suppression du repère facultatif de dernière visite.
+localStorage.removeItem("zigotos-last-visit-v1");
 const personalChecklistKey = "zigotos-personal-checklist-v1";
 const personalChecklistVersionKey = "zigotos-personal-checklist-version";
 const listTabKey = "zigotos-list-tab-v1";
@@ -75,7 +76,7 @@ let activeListTab = localStorage.getItem(listTabKey) || "shared";
 let personalChecklist = loadPersonalChecklist();
 let activeActivityIndex = null;
 let showAllFaqs = false;
-const previousVisit = Number(localStorage.getItem(lastVisitKey)) || Date.now();
+
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
@@ -245,7 +246,7 @@ function renderAssistanceContacts() {
   const container = document.querySelector("#assistanceContacts");
   container.innerHTML = data.assistanceContacts.map(contact => {
     const phone = contact.number.replace(/[^+\d]/g, "");
-    return `<form class="assistance-card" data-id="${escapeHTML(contact.id)}"><span>${escapeHTML(contact.vehicle)}</span><label>Assurance<input name="insurer" maxlength="40" value="${escapeHTML(contact.insurer)}" placeholder="À compléter"></label><label>Numéro d'assistance<input name="number" inputmode="tel" maxlength="24" value="${escapeHTML(contact.number)}" placeholder="À compléter"></label><div><button type="submit">Enregistrer</button>${phone ? `<a href="tel:${escapeHTML(phone)}">Appeler</a>` : ""}</div>${contact.author ? `<small>Modifié par ${escapeHTML(contact.author)}</small>` : ""}</form>`;
+    return `<form class="assistance-card" data-id="${escapeHTML(contact.id)}"><span>${escapeHTML(contact.vehicle)}</span><p class="list-note">Contact d’assistance public, partagé via Firebase avec ton prénom ou surnom. Ne saisis pas de numéro de contrat. <a href="confidentialite.html">Confidentialité</a>.</p><label>Assurance (facultatif)<input name="insurer" maxlength="40" value="${escapeHTML(contact.insurer)}" placeholder="À compléter"></label><label>Numéro d'assistance (facultatif)<input name="number" inputmode="tel" maxlength="24" value="${escapeHTML(contact.number)}" placeholder="À compléter"></label><div><button type="submit">Enregistrer</button>${phone ? `<a href="tel:${escapeHTML(phone)}">Appeler</a>` : ""}</div>${contact.author ? `<small>Modifié par ${escapeHTML(contact.author)}</small>` : ""}</form>`;
   }).join("");
   container.querySelectorAll(".assistance-card").forEach(form => form.addEventListener("submit", async event => {
     event.preventDefault();
@@ -263,7 +264,7 @@ function renderChecklist() {
   const list = document.querySelector("#checklistList");
   const completed = data.checklist.filter(item => item.checked).length;
   if (activeListTab === "shared") document.querySelector("#checklistProgress").textContent = `${completed} / ${data.checklist.length} préparé${completed > 1 ? "s" : ""}`;
-  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}${new Date(item.updatedAt || 0).getTime() > previousVisit ? " is-new" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
+  list.innerHTML = data.checklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><span class="check-text">${escapeHTML(item.text)}</span></label>${item.author ? `<span class="check-author" title="Modifié par ${escapeHTML(item.author)}"><b>${escapeHTML(item.author.charAt(0).toUpperCase())}</b></span>` : ""}<button class="check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", async event => {
     const item = data.checklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     item.checked = event.target.checked;
@@ -371,6 +372,7 @@ function updateListTabs() {
     const active = button.dataset.tab === activeListTab;
     button.classList.toggle("active", active);
     button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
   });
   document.querySelectorAll(".list-panel").forEach(panel => panel.hidden = panel.dataset.panel !== activeListTab);
 }
@@ -458,7 +460,7 @@ window.addEventListener("beforeunload", event => {
   event.preventDefault();
   event.returnValue = "";
 });
-window.addEventListener("pagehide", () => localStorage.setItem(lastVisitKey, String(Date.now())));
+
 const navigationLinks = [...document.querySelectorAll(".section-nav a,.mobile-nav a")];
 const observedSections = [...document.querySelectorAll("main section[id]")];
 if ("IntersectionObserver" in window) {
@@ -590,3 +592,19 @@ if (!localStorage.getItem(nameKey)) {
 } else {
   window.dispatchEvent(new CustomEvent("trip-user-ready", { detail: localStorage.getItem(nameKey) }));
 }
+
+// Onglets : une seule étape de tabulation, flèches, Début et Fin.
+document.querySelectorAll(".list-tab").forEach((button, index) => {
+  button.addEventListener("keydown", event => {
+    const tabs = [...document.querySelectorAll(".list-tab")];
+    let next;
+    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+    if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = tabs.length - 1;
+    if (next === undefined) return;
+    event.preventDefault();
+    tabs[next].click();
+    tabs[next].focus();
+  });
+});

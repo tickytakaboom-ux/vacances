@@ -37,3 +37,5 @@ Carte compacte avec les dix lieux choisis et une sélection alentour actualisée
 ## Retouche du carnet
 
 Direction dans [DESIGN.md](DESIGN.md). Voir [le livrable](docs/design-retouche.md) pour les changements, les vérifications et les informations à compléter.
+
+- [Corrections juridiques et non-indexation](docs/corrections-juridiques.md) : résultat adapté au carnet, vérifications et informations à compléter.

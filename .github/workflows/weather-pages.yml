@@ -59,7 +59,7 @@ jobs:
       - name: Préparer uniquement les fichiers publics
         run: |
           mkdir -p .preview/site
-          cp index.html confidentialite.html mentions-legales.html icons.js app.js firebase-sync.js styles.css weather.js weather.css map.js map.css site.webmanifest .preview/site/
+          cp index.html confidentialite.html mentions-legales.html regles-utilisation.html fonts.css icons.js app.js firebase-sync.js styles.css weather.js weather.css map.js map.css site.webmanifest .preview/site/
           cp -r assets data .preview/site/
           touch .preview/site/.nojekyll
       - uses: actions/upload-pages-artifact@v3

@@ -19,13 +19,12 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <title>Les Zigotos à Embrun</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261011-3">
-  <link rel="stylesheet" href="weather.css?v=20261011-3">
+  <link rel="stylesheet" href="styles.css?v=20261011-4">
+  <link rel="stylesheet" href="weather.css?v=20261011-4">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
-  <link rel="stylesheet" href="map.css?v=20261011-3">
+  <link rel="stylesheet" href="map.css?v=20261011-4">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<link rel="stylesheet" href="fonts.css?v=20261011-4">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -205,30 +204,30 @@
       </div>
       <div class="checklist-card">
         <div class="list-tabs" role="tablist" aria-label="Choisir une liste">
-          <button class="list-tab active" type="button" role="tab" data-tab="shared">Matériel commun</button>
-          <button class="list-tab" type="button" role="tab" data-tab="personal">Ma valise</button>
-          <button class="list-tab" type="button" role="tab" data-tab="shopping">Courses</button>
+          <button class="list-tab active" type="button" role="tab" id="tab-shared" aria-controls="panel-shared" aria-selected="true" tabindex="0" data-tab="shared">Matériel commun</button>
+          <button class="list-tab" type="button" role="tab" id="tab-personal" aria-controls="panel-personal" aria-selected="false" tabindex="-1" data-tab="personal">Ma valise</button>
+          <button class="list-tab" type="button" role="tab" id="tab-shopping" aria-controls="panel-shopping" aria-selected="false" tabindex="-1" data-tab="shopping">Courses</button>
         </div>
-        <div class="list-panel" data-panel="shared">
-          <p class="list-note">Cette liste et ses coches sont partagées avec tout le groupe.</p>
+        <div class="list-panel" role="tabpanel" id="panel-shared" aria-labelledby="tab-shared" tabindex="0" data-panel="shared">
+          <p class="list-note">Cette liste et ses coches sont envoyées à Firebase, avec ton prénom ou surnom. <a href="confidentialite.html">Données et stockage</a>.</p>
           <form id="checklistForm" class="checklist-form">
-            <label for="checklistInput">Ajouter du matériel commun</label>
+            <label for="checklistInput">Ajouter du matériel commun (obligatoire)</label>
             <div><input id="checklistInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="checklist-list" id="checklistList"></div>
         </div>
-        <div class="list-panel" data-panel="personal" hidden>
-          <p class="list-note private-note">Cette liste reste uniquement sur cet appareil. Personne d'autre ne voit tes affaires ni tes coches.</p>
+        <div class="list-panel" role="tabpanel" id="panel-personal" aria-labelledby="tab-personal" tabindex="0" data-panel="personal" hidden>
+          <p class="list-note private-note">Cette liste reste uniquement sur cet appareil. Elle n’est pas envoyée à Firebase. <a href="confidentialite.html#stockages">Stockage sur cet appareil</a>.</p>
           <form id="personalForm" class="checklist-form">
-            <label for="personalInput">Ajouter dans ma valise</label>
+            <label for="personalInput">Ajouter dans ma valise (obligatoire)</label>
             <div><input id="personalInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="checklist-list personal-list" id="personalList"></div>
         </div>
-        <div class="list-panel" data-panel="shopping" hidden>
-          <p class="list-note">Ajoutez d'abord les produits, puis décidez ensemble s'il faut les apporter ou les acheter sur place.</p>
+        <div class="list-panel" role="tabpanel" id="panel-shopping" aria-labelledby="tab-shopping" tabindex="0" data-panel="shopping" hidden>
+          <p class="list-note">Les produits et leurs modifications sont partagés via Firebase, avec ton prénom ou surnom. <a href="confidentialite.html">Données et stockage</a>.</p>
           <form id="shoppingForm" class="checklist-form">
-            <label for="shoppingInput">Ajouter un produit</label>
+            <label for="shoppingInput">Ajouter un produit (obligatoire)</label>
             <div><input id="shoppingInput" maxlength="80" autocomplete="off" required><button type="submit">Ajouter <span data-icon="plus"></span></button></div>
           </form>
           <div class="shopping-list" id="shoppingList"></div>
@@ -237,7 +236,7 @@
     </section>
 
     <section class="section camping-section" id="camping">
-      <div class="camping-visual" aria-label="Illustration du lac et des montagnes">
+      <div class="camping-visual" role="img" aria-label="Illustration du lac et des montagnes">
         <div class="sun"></div><div class="mountain mountain-back"></div><div class="mountain mountain-front"></div><div class="lake"></div>
       </div>
       <div class="camping-copy">
@@ -300,7 +299,7 @@
 
   <footer>
     <div><span class="brand-mark">Z</span><strong>Embrun 2027</strong></div>
-    <div class="footer-info"><p>Fait avec beaucoup trop d'avance, comme il se doit.</p><nav aria-label="Informations du site"><a href="confidentialite.html">Confidentialité</a><a href="mentions-legales.html">Mentions légales</a></nav></div>
+    <div class="footer-info"><p>Fait avec beaucoup trop d'avance, comme il se doit.</p><nav aria-label="Informations du site"><a href="confidentialite.html">Confidentialité</a><a href="mentions-legales.html">Mentions légales</a><a href="regles-utilisation.html">Règles du carnet</a></nav></div>
   </footer>
 
   <nav class="mobile-nav" aria-label="Navigation principale">
@@ -317,10 +316,10 @@
       <p class="eyebrow dark">Bienvenue dans le carnet</p>
       <h3>Comment tu<br>t'appelles ?</h3>
       <p>Ton prénom permet de reconnaître tes modifications. Tu peux utiliser un surnom. <a href="confidentialite.html">Voir les données utilisées</a>.</p>
-      <label>Ton prénom
+      <label>Ton prénom ou surnom (obligatoire)
         <input id="firstName" name="firstName" type="text" minlength="2" maxlength="24" autocomplete="given-name" required>
       </label>
-      <button class="button button-dark" type="submit">Rejoindre le voyage</button>
+      <label class="usage-accept"><input type="checkbox" id="acceptUsage" required> <span>J’accepte les <a href="regles-utilisation.html">règles du carnet</a> (obligatoire).</span></label><button class="button button-dark" type="submit">Rejoindre le voyage</button>
     </form>
   </dialog>
 
@@ -338,17 +337,17 @@
   <dialog id="activityDialog" class="activity-dialog">
     <form id="activityForm">
       <div class="dialog-head"><div><p class="eyebrow dark">Fiche activité</p><h3 id="activityDialogTitle">Activité</h3></div><button type="button" id="closeActivityDialog" aria-label="Fermer">×</button></div>
-      <label>Nom de l'activité<input id="activityName" maxlength="60" required></label>
+      <label>Nom de l'activité (obligatoire)<input id="activityName" maxlength="60" required></label>
       <label>Prix <span>(facultatif)</span><input id="activityPrice" maxlength="40" placeholder="Ex. 25 € par personne"></label>
-      <label>Précisions<textarea id="activityNotes" maxlength="600" rows="6" placeholder="Horaires, adresse, réservation, ce qu'il faut prévoir…"></textarea></label>
-      <button class="button button-dark" type="submit">Enregistrer pour tout le monde</button>
+      <label>Précisions <span>(facultatif)</span><textarea id="activityNotes" maxlength="600" rows="6" placeholder="Horaires, adresse, réservation, ce qu'il faut prévoir…"></textarea></label>
+      <p class="list-note">Ces informations sont partagées via Firebase avec l’auteur et la date du changement. N’ajoute pas de données sensibles. <a href="confidentialite.html">Confidentialité</a>.</p><button class="button button-dark" type="submit">Enregistrer pour tout le monde</button>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status"></div>
-  <script src="icons.js?v=20261011-3"></script>
-  <script src="app.js?v=20261011-3"></script>
-  <script src="weather.js?v=20261011-3" defer></script>
-  <script src="map.js?v=20261011-3" defer></script>
+  <script src="icons.js?v=20261011-4"></script>
+  <script src="app.js?v=20261011-4"></script>
+  <script src="weather.js?v=20261011-4" defer></script>
+  <script src="map.js?v=20261011-4" defer></script>
   <script type="module" src="firebase-sync.js?v=20260804-1"></script>
 </body>
 </html>
