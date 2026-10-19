@@ -7,30 +7,17 @@
     "timezone": "Europe/Paris"
   },
   "source": "open-meteo",
-  "fetchedAt": "2026-10-19T17:30:30.759Z",
-  "nextAttemptAt": "2026-10-19T18:30:30.759Z",
+  "fetchedAt": "2026-10-19T22:23:57.831Z",
+  "nextAttemptAt": "2026-10-19T23:23:57.831Z",
   "status": "fresh",
   "message": "",
   "days": [
     {
-      "date": "2026-10-19",
-      "min": 9.3,
-      "max": 20.9,
-      "wind": 30.6,
-      "rain": 0.8,
-      "rainProbability": 55,
-      "uv": 3.75,
-      "uvKind": "forecast",
-      "sunset": "18:43",
-      "condition": 80,
-      "partial": false
-    },
-    {
       "date": "2026-10-20",
-      "min": 12.5,
+      "min": 12.2,
       "max": 15.2,
-      "wind": 32.9,
-      "rain": 15.1,
+      "wind": 21.3,
+      "rain": 17.8,
       "rainProbability": 100,
       "uv": 0.8,
       "uvKind": "forecast",
@@ -41,9 +28,9 @@
     {
       "date": "2026-10-21",
       "min": 6.5,
-      "max": 13.1,
-      "wind": 22.4,
-      "rain": 4.9,
+      "max": 13.5,
+      "wind": 31.1,
+      "rain": 5.2,
       "rainProbability": 100,
       "uv": 2.05,
       "uvKind": "forecast",
@@ -101,6 +88,19 @@
       "uvKind": "forecast",
       "sunset": "18:33",
       "condition": 61,
+      "partial": false
+    },
+    {
+      "date": "2026-10-26",
+      "min": 9.1,
+      "max": 14.6,
+      "wind": 6.9,
+      "rain": 0,
+      "rainProbability": 39,
+      "uv": 3.5,
+      "uvKind": "forecast",
+      "sunset": "18:31",
+      "condition": 3,
       "partial": false
     }
   ]
