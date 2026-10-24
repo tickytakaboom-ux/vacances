@@ -382,7 +382,17 @@ function updateBudget() {
   const budget = data.budgets[count];
   document.querySelector("#perPersonTotal").textContent = euro.format(budget.perPerson);
   document.querySelector("#groupTotal").textContent = `Total du groupe : ${euro.format(budget.total)}`;
-  document.querySelector("#budgetList").innerHTML = budget.items.map(item => `<div class="budget-row"><span>${item[0]}</span><strong>${euro.format(item[1])} / pers.</strong></div>`).join("");
+  const rows = budget.items.map(item => {
+    const row = document.createElement("div");
+    row.className = "budget-row";
+    const label = document.createElement("span");
+    label.textContent = item[0];
+    const amount = document.createElement("strong");
+    amount.textContent = `${euro.format(item[1])} / pers.`;
+    row.append(label, amount);
+    return row;
+  });
+  document.querySelector("#budgetList").replaceChildren(...rows);
   document.querySelector("#depositPerPerson").textContent = `${euro.format(275.70 / count)} / pers.`;
   document.querySelector("#depositCautionPerPerson").textContent = `${euro.format(200 / count)} / pers.`;
   document.querySelector("#statPeople").textContent = count;
