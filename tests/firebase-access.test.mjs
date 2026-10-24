@@ -15,36 +15,23 @@ function harness() {
  return {nodes,events,listeners,writes,snapshot,save:content=>sandbox.window.saveSharedTrip(content)};
 }
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-test('appareil inconnu : code visible, aucun accès au carnet ni écriture',async()=>{
- const h=harness();await tick();assert.equal(h.nodes.get('#deviceCode').value,'device-test');assert.equal(h.listeners.length,1);
- h.listeners[0].success(h.snapshot(null));assert.equal(await h.save({text:'local'}),false);assert.equal(h.writes.length,0);assert.equal(h.listeners.length,1);
+test('connexion automatique : lecture directe sans fiche membre, puis sauvegarde après réception serveur',async()=>{
+ const h=harness();await tick();assert.equal(h.listeners.length,1);assert.equal(h.listeners[0].ref,'trips/embrun-2027');
+ assert.equal(await h.save(seed),false);
+ h.listeners[0].success(h.snapshot({contentJson:JSON.stringify(seed)},true));assert.equal(await h.save(seed),false);
+ h.listeners[0].success(h.snapshot({contentJson:JSON.stringify(seed)}));assert.equal(h.writes.length,0);assert.equal(await h.save(seed),true);assert.equal(h.writes.length,2);assert.equal(h.writes[0][1].updatedByUid,'device-test');
 });
-test('autorisation : attendre le serveur, charger le carnet sans envoyer l’ancien cache',async()=>{
- const h=harness();await tick();await h.save({text:'ancien cache'});
- h.listeners[0].success(h.snapshot({active:true},true));assert.equal(h.listeners.length,1);
- h.listeners[0].success(h.snapshot({active:true}));assert.equal(h.listeners.length,2);
- assert.equal(await h.save({text:'trop tôt'}),false);
- h.listeners[1].success(h.snapshot({contentJson:JSON.stringify(seed)},true));assert.equal(h.events.filter(e=>e.type==='shared-trip-data').length,0);
- h.listeners[1].success(h.snapshot({contentJson:JSON.stringify(seed)}));assert.equal(h.writes.length,0);assert.equal(h.nodes.get('#deviceAccess').hidden,true);
- assert.equal(await h.save({...structuredClone(seed),text:{...seed.text,intro:'nouvelle modification'}}),true);assert.equal(h.writes.length,2);
- assert.equal(h.writes[0][1].updatedByUid,'device-test');assert.equal(h.writes[1][1].changedByUid,'device-test');
-});
-test('retrait : arrêter le carnet, ignorer les callbacks tardifs et refuser les sauvegardes',async()=>{
- const h=harness();await tick();h.listeners[0].success(h.snapshot({active:true}));const trip=h.listeners[1];trip.success(h.snapshot({contentJson:JSON.stringify(seed)}));
- h.listeners[0].success(h.snapshot({active:false}));assert.equal(trip.stopped,true);const count=h.events.length;trip.success(h.snapshot({contentJson:'{"stale":true}'}));assert.equal(h.events.length,count);assert.equal(await h.save({text:'refusé'}),false);assert.equal(h.writes.length,0);assert.equal(h.nodes.get('#deviceAccess').hidden,false);
-});
-test('règles absentes ou carnet absent : aucune initialisation ou écriture automatique',async()=>{
- const h=harness();await tick();h.listeners[0].error({code:'permission-denied'});assert.match(h.nodes.get('#deviceAccessMessage').textContent,/règles Firebase/);assert.equal(h.writes.length,0);
- h.listeners[0].success(h.snapshot({active:true}));h.listeners[1].success(h.snapshot(null));assert.equal(await h.save({text:'défaut'}),false);assert.equal(h.writes.length,0);
+test('carnet absent ou erreur réseau : aucune initialisation automatique',async()=>{
+ const h=harness();await tick();h.listeners[0].success(h.snapshot(null));assert.equal(await h.save(seed),false);assert.equal(h.writes.length,0);h.listeners[0].error({code:'unavailable'});assert.equal(await h.save(seed),false);
 });
 test('une version partagée mal formée garde le carnet précédent et bloque les envois jusqu’à une réception saine',async()=>{
- const h=harness();await tick();h.listeners[0].success(h.snapshot({active:true}));const trip=h.listeners[1];trip.success(h.snapshot({contentJson:JSON.stringify(seed)}));
+ const h=harness();await tick();const trip=h.listeners[0];trip.success(h.snapshot({contentJson:JSON.stringify(seed)}));
  const before=h.events.filter(e=>e.type==='shared-trip-data').length;
  for(const contentJson of ['{',JSON.stringify({...seed,faqs:null}),'[]','null','{}']){trip.success(h.snapshot({contentJson}));assert.equal(h.events.filter(e=>e.type==='shared-trip-data').length,before);assert.equal(await h.save(seed),false);assert.equal(h.writes.length,0);}
  assert.match(h.nodes.get('#dataWarning').textContent,/dernière copie/);trip.success(h.snapshot({contentJson:JSON.stringify(seed)}));assert.equal(await h.save(seed),true);
 });
 
 test('une sauvegarde mal formée n’est pas envoyée même depuis un appareil autorisé prêt',async()=>{
- const h=harness();await tick();h.listeners[0].success(h.snapshot({active:true}));h.listeners[1].success(h.snapshot({contentJson:JSON.stringify(seed)}));
+ const h=harness();await tick();h.listeners[0].success(h.snapshot({contentJson:JSON.stringify(seed)}));
  assert.equal(await h.save({...structuredClone(seed),faqs:null}),false);assert.equal(h.writes.length,0);assert.match(h.nodes.get('#dataWarning').textContent,/Envoi refusé/);
 });

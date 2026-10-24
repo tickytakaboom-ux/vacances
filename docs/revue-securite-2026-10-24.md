@@ -154,3 +154,7 @@ Vérifications : suite Node habituelle, contrôles Edge (390 et 1280 pixels) ave
 Activation restante : publier les fichiers du site, puis republier le contenu complet de firestore.rules dans la console. Aucun nouvel appareil à créer pour les navigateurs déjà autorisés.
 
 Référence technique : [contrôle des champs et types Firestore](https://firebase.google.com/docs/firestore/security/rules-fields).
+
+## Choix ultérieur : accès automatique confirmé par le responsable
+
+Après usage, le responsable demande explicitement de retirer les approbations par appareil et accepte que toute personne découvrant le site puisse lire et modifier le carnet. Le client se connecte anonymement puis écoute directement le carnet ; aucune consultation members. Les règles exigent une connexion et conservent les contrôles de champs, tailles, UID et dates serveur. La protection du budget et les validations des données sont conservées. Les anciennes fiches members restent privées et inutilisées, sans suppression. Le constat d’accès non réservé aux amis devient une limite volontairement acceptée, et non une restriction toujours en vigueur. Activation : publication du site puis publication manuelle des règles correspondantes.

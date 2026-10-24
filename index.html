@@ -47,15 +47,6 @@
   </header>
 
   <p id="dataWarning" class="device-access" role="alert" hidden></p>
-  <aside id="deviceAccess" class="device-access" aria-labelledby="deviceAccessTitle" hidden>
-    <strong id="deviceAccessTitle">Autoriser cet appareil</strong>
-    <p id="deviceAccessMessage" role="status">Connexion nécessaire pour accéder au carnet partagé.</p>
-    <label for="deviceCode">Code de cet appareil (identifiant Firebase)</label>
-    <input id="deviceCode" type="text" readonly spellcheck="false" aria-describedby="deviceAccessNote">
-    <div class="device-access-actions"><button type="button" class="button button-dark" id="copyDeviceCode">Copier le code</button><button type="button" class="button" id="retryDeviceAccess">Vérifier l’accès</button></div>
-    <small id="deviceAccessNote">Le site public et les copies déjà enregistrées restent consultables. Seuls les appareils autorisés peuvent synchroniser le carnet. Effacer les données du navigateur peut nécessiter une nouvelle autorisation.</small>
-  </aside>
-
   <main>
     <section class="hero" id="accueil">
       <div class="hero-orb orb-one"></div>
@@ -336,7 +327,7 @@
   <dialog id="editDialog">
     <form method="dialog">
       <div class="dialog-head"><div><p class="eyebrow dark">Mode édition</p><h3>Gérer le carnet</h3></div><button value="cancel" aria-label="Fermer"><span data-icon="x"></span></button></div>
-      <p>Les changements sont enregistrés sur cet appareil. Leur partage nécessite un appareil autorisé et le chargement du carnet en ligne. Les changements effectués avant autorisation ne sont pas envoyés automatiquement.</p>
+      <p>Les changements sont enregistrés sur cet appareil. Le partage démarre automatiquement après la connexion et le chargement du carnet en ligne. L’ancienne copie locale n’est pas envoyée automatiquement.</p>
       <p class="last-editor" id="lastEditor">Le premier changement partagé apparaîtra ici.</p>
       <div class="dialog-actions">
         <button type="button" class="button button-dark" id="toggleEdit">Activer l'édition</button>
@@ -358,6 +349,6 @@
   <script src="app.js?v=20261024-3"></script>
   <script src="weather.js?v=20261011-4" defer></script>
   <script src="map.js?v=20261011-4" defer></script>
-  <script type="module" src="firebase-sync.js?v=20261024-3"></script>
+  <script type="module" src="firebase-sync.js?v=20261024-4"></script>
 </body>
 </html>

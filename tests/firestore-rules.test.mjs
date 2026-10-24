@@ -30,9 +30,9 @@ test('visiteur non connecté : lecture, écriture et historique refusés',async(
  const db=guest();await assertFails(getDoc(trip(db)));await assertFails(setDoc(trip(db),payload('guest')));
  await assertFails(getDocs(collection(db,'trips/embrun-2027/history')));
 });
-test('compte anonyme extérieur : lecture et écriture refusées',async()=>{
- const db=signed('outsider');await assertFails(getDoc(trip(db)));await assertFails(setDoc(trip(db),payload('outsider')));
- await assertFails(setDoc(entry(db),{contentJson:'{}',changedByUid:'outsider'}));
+test('nouveau compte anonyme sans approbation : lecture et écriture accessibles',async()=>{
+ const db=signed('outsider');await assertSucceeds(getDoc(trip(db)));await assertSucceeds(setDoc(trip(db),payload('outsider')));
+ await assertSucceeds(setDoc(entry(db),{contentJson:'{}',changedByUid:'outsider',changedByName:'Ami',changedAt:serverTimestamp(),changedSections:['text']}));
 });
 test('membre autorisé : carnet et historique accessibles',async()=>{
  const db=signed('member-active');await assertSucceeds(getDoc(trip(db)));
@@ -40,8 +40,8 @@ test('membre autorisé : carnet et historique accessibles',async()=>{
  await assertSucceeds(setDoc(entry(db),{contentJson:'{}',changedByUid:'member-active',changedByName:'Ami',changedAt:serverTimestamp(),changedSections:['text']}));
  await assertSucceeds(getDocs(collection(db,'trips/embrun-2027/history')));
 });
-test('membre révoqué : accès refusé',async()=>{
- const db=signed('member-revoked');await assertFails(getDoc(trip(db)));await assertFails(setDoc(trip(db),payload('member-revoked')));
+test('les anciennes fiches membres ne conditionnent plus l’accès',async()=>{
+ const db=signed('member-revoked');await assertSucceeds(getDoc(trip(db)));await assertSucceeds(setDoc(trip(db),payload('member-revoked')));
 });
 test('impossible de s’accorder ou réactiver un accès',async()=>{
  const db=signed('outsider');await assertFails(setDoc(doc(db,'trips/embrun-2027/members/outsider'),{active:true}));
@@ -50,7 +50,7 @@ test('impossible de s’accorder ou réactiver un accès',async()=>{
 test('la liste des membres et les fiches des autres sont privées',async()=>{
  const db=signed('member-active');await assertFails(getDocs(collection(db,'trips/embrun-2027/members')));
  await assertFails(getDoc(doc(db,'trips/embrun-2027/members/member-revoked')));
- await assertSucceeds(getDoc(doc(db,'trips/embrun-2027/members/member-active')));
+ await assertFails(getDoc(doc(db,'trips/embrun-2027/members/member-active')));
 });
 test('les UID d’auteur ne peuvent pas être usurpés',async()=>{
  const db=signed('member-active');await assertFails(setDoc(trip(db),payload('outsider')));
@@ -66,11 +66,7 @@ test('autres chemins : accès refusé',async()=>{
  await assertFails(setDoc(doc(db,'other/data'),{value:true}));
 });
 
-test('une autorisation retirée bloque aussi un appareil déjà connecté',async()=>{
- const db=signed('member-active');await assertSucceeds(getDoc(trip(db)));
- await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'trips/embrun-2027/members/member-active'),{active:false});});
- await assertFails(getDoc(trip(db)));await assertFails(setDoc(trip(db),payload('member-active')));
-});
+
 
 test('les métadonnées de sauvegarde incorrectes sont refusées',async()=>{
  const db=signed('member-active');

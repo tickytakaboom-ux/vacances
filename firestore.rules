@@ -2,13 +2,6 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isMember() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/trips/embrun-2027/members/$(request.auth.uid))
-        && get(/databases/$(database)/documents/trips/embrun-2027/members/$(request.auth.uid)).data.active == true;
-    }
-
-
     function validContent(data) {
       // contentJson est une chaîne opaque : le schéma interne est contrôlé par le client.
       return data.contentJson is string && data.contentJson.size() > 0 && data.contentJson.size() <= 800000;
@@ -34,20 +27,16 @@ service cloud.firestore {
     }
 
     match /trips/embrun-2027 {
-      allow read: if isMember();
-      allow create, update: if isMember()
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null
         && validTrip(request.resource.data);
       allow delete: if false;
     }
     match /trips/embrun-2027/history/{entryId} {
-      allow read: if isMember();
-      allow create: if isMember()
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
         && validHistory(request.resource.data);
       allow update, delete: if false;
-    }
-    match /trips/embrun-2027/members/{memberUid} {
-      allow get: if request.auth != null && request.auth.uid == memberUid;
-      allow list, create, update, delete: if false;
     }
     match /{document=**} {
       allow read, write: if false;
