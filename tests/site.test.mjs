@@ -85,3 +85,15 @@ test("les libellés du budget sont du texte et les montants restent inchangés p
     assert.equal(JSON.stringify(data), snapshot);
   }
 });
+
+test("les structures mal formées sont refusées avant toute migration", () => {
+  const invalid = [null, [], "texte", 42, {}];
+  for (const value of invalid) assert.throws(() => functions.normalizeData(value));
+  const mutations = [d=>d.faqs=null,d=>d.faqs=[null],d=>d.activities=[{}],d=>d.days=[["Jour",42,"texte"]],d=>d.text=null,d=>d.textAuthors={intro:42},d=>d.checklist=[null],d=>d.checklist[0].checked="false",d=>d.assistanceContacts[0].number=42,d=>d.shopping=[{id:"a",text:"Pain",done:false,decision:{}}],d=>d.budgets["7"].items=null,d=>d.budgets["7"].total="12",d=>d.budgets["7"].perPerson=Infinity,d=>delete d.budgets["7"],d=>d.checklist.push({...d.checklist[0]}),d=>d.faqs=Array(101).fill(["Q","R"]),d=>d.text.intro="x".repeat(20001),d=>d.dataVersion="3",d=>d.textAuthors.intro={},d=>d.shopping=null,d=>d.ideas=[null],d=>d.assistanceContacts=[null],d=>d.budgets["7"].items=[["Montant",-1]],d=>Object.assign(d,JSON.parse('{"__proto__":{"polluted":true}}'))];
+  for(const mutate of mutations){const data=structuredClone(functions.initialData);mutate(data);assert.throws(()=>functions.normalizeData(data));}
+});
+test("la validation conserve les champs personnalisés et les anciennes versions valides",()=>{
+ const data=structuredClone(functions.initialData);data.text.intro="Nos souvenirs";data.textAuthors.intro="Julian";data.days[0].push("Ami","");data.shopping=[{id:"course-1",text:"Pain",decision:"bring",done:false,author:"Ami",updatedAt:"2026-10-24T12:00:00Z"}];
+ const before=JSON.stringify(data);const result=functions.normalizeData(data);assert.equal(result.text.intro,"Nos souvenirs");assert.deepEqual(JSON.parse(JSON.stringify(result.shopping)),data.shopping);assert.equal(JSON.stringify(data),before);
+ const old=structuredClone(data);delete old.textAuthors;delete old.shoppingVersion;assert.doesNotThrow(()=>functions.normalizeData(old));
+});

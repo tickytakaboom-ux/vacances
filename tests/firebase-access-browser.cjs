@@ -31,7 +31,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         if(body)return route.fulfill({contentType:'text/javascript',body});
         return route.abort();
       });
-      const page=await context.newPage();await page.goto(origin);await page.waitForFunction(()=>window.testListeners?.length===1);
+      const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));await page.goto(origin);await page.waitForFunction(()=>window.testListeners?.length===1);
       assert.equal(await page.locator('#deviceCode').inputValue(),'device-browser-test');
       assert.equal(await page.locator('#deviceAccess').isVisible(),true);
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -39,12 +39,29 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.evaluate(()=>window.testWrites),0);
       await page.evaluate(()=>{window.testListeners[0].success({exists:()=>true,data:()=>({active:true}),metadata:{fromCache:false}});window.testListeners[1].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(window.getTripData())}),metadata:{fromCache:false,hasPendingWrites:false}});});
       assert.equal(await page.locator('#deviceAccess').isVisible(),false);
+      const healthy=await page.evaluate(()=>({data:window.getTripData(),cache:localStorage.getItem('zigotos-embrun-data-v1')}));
+      for(const field of ['faqs','activities','days','text','checklist','budgets','assistanceContacts']) {
+        await page.evaluate(({data,field})=>{data[field]=null;window.testListeners[1].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(data)}),metadata:{fromCache:false,hasPendingWrites:false}});},{data:healthy.data,field});
+        assert.deepEqual(await page.evaluate(()=>window.getTripData()),healthy.data);
+        assert.equal(await page.evaluate(()=>localStorage.getItem('zigotos-embrun-data-v1')),healthy.cache);
+        assert.equal(await page.locator('#dataWarning').isVisible(),true);
+        assert.equal(await page.evaluate(()=>window.saveSharedTrip(window.getTripData())),false);
+      }
+      await page.evaluate(data=>window.testListeners[1].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(data)}),metadata:{fromCache:false,hasPendingWrites:false}}),healthy.data);
+      assert.equal(await page.locator('#dataWarning').isVisible(),false);
+      assert.equal(await page.evaluate(()=>{const d=window.getTripData();d.faqs=null;return window.dispatchEvent(new CustomEvent('shared-trip-data',{detail:d,cancelable:true}));}),false);
+      assert.equal(await page.evaluate(()=>localStorage.getItem('zigotos-embrun-data-v1')),healthy.cache);
+      assert.deepEqual(errors,[]);
       await page.evaluate(()=>window.testListeners[0].success({exists:()=>true,data:()=>({active:false}),metadata:{fromCache:false}}));
       assert.equal(await page.locator('#deviceAccess').isVisible(),true);
       assert.equal(await page.evaluate(()=>window.testListeners[1].stopped),true);
       assert.equal(await page.evaluate(()=>window.testWrites),0);
+      await page.reload();await page.waitForFunction(()=>typeof window.getTripData==='function');assert.equal(await page.locator('#faqList .faq-item').count()>0,true);assert.deepEqual(errors,[]);
+      // Une copie locale déjà corrompue ne doit pas empêcher le démarrage ni être effacée.
+      await page.evaluate(()=>{localStorage.setItem('zigotos-embrun-data-v1','{"faqs":null}');localStorage.setItem('zigotos-personal-checklist-v1','[null]');localStorage.setItem('zigotos-personal-checklist-version','2');});
+      await page.reload();await page.waitForFunction(()=>typeof window.getTripData==='function');assert.equal(await page.locator('#dataWarning').isVisible(),true);assert.equal(await page.evaluate(()=>localStorage.getItem('zigotos-embrun-data-v1')),'{"faqs":null}');assert.equal(await page.evaluate(()=>localStorage.getItem('zigotos-personal-checklist-v1')),'[null]');assert.deepEqual(errors,[]);
       await context.close();
     }
-    console.log('PASS accès appareil : attente, autorisation, révocation et absence d’écriture automatique, mobile et bureau ; Firebase simulé.');
+    console.log('PASS accès et données : autorisation, révocation, rejet des structures incorrectes, cache sain conservé, caches corrompus sans plantage ; mobile et bureau, Firebase simulé.');
   } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

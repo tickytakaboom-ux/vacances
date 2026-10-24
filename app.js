@@ -68,11 +68,13 @@ const personalChecklistKey = "zigotos-personal-checklist-v1";
 const personalChecklistVersionKey = "zigotos-personal-checklist-version";
 const listTabKey = "zigotos-list-tab-v1";
 const adminCodeHash = "a8f5c8afb801ba1992ca7ccb79908e1d78c493a0f03cbe310c6b561f9d4647f5";
+let dataLoadFailed = false;
 let data = loadData();
 let editing = false;
 let editSnapshot = null;
 let editTextSnapshot = null;
 let activeListTab = localStorage.getItem(listTabKey) || "shared";
+let personalLoadFailed = false;
 let personalChecklist = loadPersonalChecklist();
 let activeActivityIndex = null;
 let showAllFaqs = false;
@@ -92,7 +94,8 @@ function loadPersonalChecklist() {
     .map((text, index) => ({ id: `personal-${index}`, text, checked: false }));
   try {
     const saved = JSON.parse(localStorage.getItem(personalChecklistKey));
-    if (!Array.isArray(saved)) return defaults;
+    if (saved === null) return defaults;
+    if (!Array.isArray(saved) || saved.length > 1000 || saved.some(item => !item || typeof item.id !== "string" || !item.id || typeof item.text !== "string" || typeof item.checked !== "boolean") || new Set(saved.map(item => item.id)).size !== saved.length) throw new TypeError("Liste personnelle invalide");
     if (localStorage.getItem(personalChecklistVersionKey) !== "2") {
       const normalizedTexts = saved.map(item => item.text.toLocaleLowerCase("fr").replace(/[\s/-]+/g, " ").trim());
       newEssentials.forEach((text, index) => {
@@ -106,7 +109,7 @@ function loadPersonalChecklist() {
     }
     return saved;
   }
-  catch { return defaults; }
+  catch { personalLoadFailed = true; return defaults; }
 }
 
 function savePersonalChecklist() {
@@ -129,12 +132,56 @@ async function isValidAdminCode(code) {
 }
 
 function loadData() {
-  try { return normalizeData(JSON.parse(localStorage.getItem(key))); }
-  catch { return structuredClone(initialData); }
+  try {
+    const saved = localStorage.getItem(key);
+    return normalizeData(saved === null ? initialData : JSON.parse(saved));
+  } catch {
+    dataLoadFailed = true;
+    return normalizeData(initialData);
+  }
 }
 
 function normalizeData(source) {
-  const normalized = { ...structuredClone(initialData), ...(source || {}) };
+  // Valider avant les migrations : une valeur incorrecte ne devient pas une valeur par défaut.
+  const record = value => value !== null && typeof value === "object" && !Array.isArray(value)
+    && Object.prototype.toString.call(value) === "[object Object]"
+    && (Object.getPrototypeOf(value) === null || Object.getPrototypeOf(Object.getPrototypeOf(value)) === null)
+    && !Object.keys(value).some(name => ["__proto__", "prototype", "constructor"].includes(name));
+  const text = value => typeof value === "string" && value.length <= 20000;
+  const number = value => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1e9;
+  const list = (value, max, check) => Array.isArray(value) && value.length <= max && Array.from(value).every(check);
+  const tuple = (value, min, max) => Array.isArray(value) && value.length >= min && value.length <= max && Array.from(value).every(text);
+  const optional = (value, name, check) => !Object.hasOwn(value, name) || check(value[name]);
+  const items = (value, check) => {
+    if (!list(value, 1000, item => record(item) && text(item.id) && item.id.length > 0 && item.id.length <= 128 && text(item.text) && optional(item, "author", text) && optional(item, "updatedAt", text) && check(item))) return false;
+    return new Set(value.map(item => item.id)).size === value.length;
+  };
+  const checks = {
+    text: value => record(value) && Object.values(value).every(text),
+    textAuthors: value => record(value) && Object.values(value).every(text),
+    days: value => list(value, 31, day => tuple(day, 3, 5)) && value.length > 0,
+    activities: value => list(value, 100, activity => tuple(activity, 3, 6)),
+    faqs: value => list(value, 100, faq => tuple(faq, 2, 2)),
+    checklist: value => items(value, item => typeof item.checked === "boolean"),
+    shopping: value => items(value, item => typeof item.done === "boolean" && ["undecided", "bring", "buy"].includes(item.decision)),
+    ideas: value => items(value, () => true),
+    assistanceContacts: value => list(value, 20, item => record(item) && ["id", "vehicle", "insurer", "number"].every(name => text(item[name])) && optional(item, "author", text)),
+    budgets: value => record(value) && ["4", "5", "6", "7"].every(count => {
+      const budget = value[count];
+      return record(budget) && number(budget.total) && number(budget.perPerson)
+        && list(budget.items, 100, item => Array.isArray(item) && item.length === 2 && text(item[0]) && number(item[1]));
+    })
+  };
+  const versions = ["dataVersion", "activityVersion", "faqVersion", "checklistVersion", "contactsVersion", "ideasVersion", "shoppingVersion"];
+  if (!record(source) || !["text", "days", "activities", "checklist", "budgets", "faqs"].every(name => Object.hasOwn(source, name)) || JSON.stringify(source).length > 200000
+    || !Object.keys(source).every(name => Object.hasOwn(checks, name) || versions.includes(name) || ["transport", "transportVersion"].includes(name))
+    || !Object.entries(checks).every(([name, check]) => optional(source, name, check))
+    || !versions.every(name => optional(source, name, value => Number.isSafeInteger(value) && value >= 0))) {
+    throw new TypeError("Structure du carnet invalide");
+  }
+
+  const normalized = { ...structuredClone(initialData), ...structuredClone(source) };
+  normalized.text = { ...initialData.text, ...normalized.text };
   if (source?.dataVersion !== initialData.dataVersion) {
     normalized.dataVersion = initialData.dataVersion;
     normalized.days = structuredClone(initialData.days);
@@ -176,10 +223,15 @@ function normalizeData(source) {
     normalized.shoppingVersion = initialData.shoppingVersion;
     normalized.shopping = Array.isArray(source?.shopping) ? source.shopping : [];
   }
+  if (JSON.stringify(normalized).length > 200000) throw new TypeError("Carnet trop volumineux");
   return normalized;
 }
 
 async function saveData() {
+  try { normalizeData(data); } catch {
+    reportDataError("Enregistrement refusé : données mal formées. La dernière copie enregistrée est conservée.");
+    return false;
+  }
   localStorage.setItem(key, JSON.stringify(data));
   if (!window.saveSharedTrip) return false;
   return window.saveSharedTrip(structuredClone(data));
@@ -584,14 +636,31 @@ document.querySelector("#nameForm").addEventListener("submit", event => {
   showToast(`Bienvenue ${name} !`);
 });
 
+window.normalizeTripData = normalizeData;
+function reportDataError(message) {
+  const warning = document.querySelector("#dataWarning");
+  warning.textContent = message;
+  warning.hidden = false;
+}
+window.reportTripDataError = reportDataError;
+window.clearTripDataError = () => { document.querySelector("#dataWarning").hidden = true; };
 window.getTripData = () => structuredClone(data);
 window.addEventListener("shared-trip-data", event => {
-  data = normalizeData(event.detail);
-  localStorage.setItem(key, JSON.stringify(data));
-  render();
+  try {
+    const received = normalizeData(event.detail);
+    localStorage.setItem(key, JSON.stringify(received));
+    data = received;
+    render();
+    window.clearTripDataError();
+  } catch {
+    event.preventDefault();
+    reportDataError("Version du carnet refusée : données mal formées. La dernière copie utilisable est conservée. Contacte Julian.");
+  }
 });
 
 render();
+if (dataLoadFailed) reportDataError("La copie locale du carnet est illisible. La version initiale est affichée en attendant le carnet partagé ; la copie locale n’a pas été effacée.");
+if (personalLoadFailed) reportDataError("La copie locale de ta valise est illisible. La liste initiale est affichée ; la copie enregistrée n’a pas été effacée.");
 updateUserBadge(currentUserName());
 updateAdminControls();
 updateCountdown();

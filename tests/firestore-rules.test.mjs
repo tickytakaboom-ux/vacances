@@ -37,7 +37,7 @@ test('compte anonyme extérieur : lecture et écriture refusées',async()=>{
 test('membre autorisé : carnet et historique accessibles',async()=>{
  const db=signed('member-active');await assertSucceeds(getDoc(trip(db)));
  await assertSucceeds(setDoc(trip(db),payload('member-active')));
- await assertSucceeds(setDoc(entry(db),{contentJson:'{}',changedByUid:'member-active',changedByName:'Ami',changedAt:serverTimestamp()}));
+ await assertSucceeds(setDoc(entry(db),{contentJson:'{}',changedByUid:'member-active',changedByName:'Ami',changedAt:serverTimestamp(),changedSections:['text']}));
  await assertSucceeds(getDocs(collection(db,'trips/embrun-2027/history')));
 });
 test('membre révoqué : accès refusé',async()=>{
@@ -70,4 +70,14 @@ test('une autorisation retirée bloque aussi un appareil déjà connecté',async
  const db=signed('member-active');await assertSucceeds(getDoc(trip(db)));
  await env.withSecurityRulesDisabled(async context=>{await updateDoc(doc(context.firestore(),'trips/embrun-2027/members/member-active'),{active:false});});
  await assertFails(getDoc(trip(db)));await assertFails(setDoc(trip(db),payload('member-active')));
+});
+
+test('les métadonnées de sauvegarde incorrectes sont refusées',async()=>{
+ const db=signed('member-active');
+ const invalid=[{...payload('member-active'),contentJson:42},{...payload('member-active'),contentJson:'x'.repeat(800001)},{...payload('member-active'),updatedByName:[]},{...payload('member-active'),updatedAt:'hier'},{...payload('member-active'),unexpected:true}];
+ for(const value of invalid)await assertFails(setDoc(trip(db),value));
+});
+test('les métadonnées d’historique incorrectes sont refusées',async()=>{
+ const db=signed('member-active');const valid={contentJson:'{}',changedByUid:'member-active',changedByName:'Ami',changedAt:serverTimestamp(),changedSections:['text']};
+ for(const changes of [{contentJson:null},{changedSections:'text'},{changedSections:['inconnue']},{changedAt:'hier'},{changedByName:42},{unexpected:true}])await assertFails(setDoc(entry(db),{...valid,...changes}));
 });

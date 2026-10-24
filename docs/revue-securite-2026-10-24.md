@@ -134,3 +134,23 @@ Preuve rouge sur anciennes règles : les tests détectent notamment l’accès d
 Tests client : tests/firebase-access.test.mjs vérifie attente, chargement depuis le serveur, révocation, absence de publication du cache et erreurs. tests/firebase-access-browser.cjs vérifie l’interface en Edge à 390 et 1280 pixels avec SDK Firebase simulé et autres requêtes externes bloquées. La régression du budget reste vérifiée séparément.
 
 Déploiement restant : publication des fichiers du site, création par Julian de son propre document membre dans la console, publication manuelle de firestore.rules, puis vérification avec un navigateur autorisé et un navigateur inconnu. Le README détaille ces étapes. Les règles en production n’ont pas été modifiées par ce correctif local. Le constat 2 ne sera considéré résolu en production qu’après activation et contrôle.
+
+## Suivi après activation des appareils
+
+Le responsable confirme dans la conversation avoir publié les règles du constat 2 et créé son document membre. Il confirme la synchronisation de son navigateur autorisé et le blocage d’une fenêtre privée inconnue. Ces confirmations sont fournies par le responsable ; aucune inspection directe de la console n’a été effectuée.
+
+## Correctif du troisième constat — préparé localement
+
+Régression reproduite avant correction : le test exigeant le refus des racines et structures incorrectes échouait. Les nouveaux tests de métadonnées Firestore échouaient également avec les anciennes règles (10 réussites / 2 échecs).
+
+La fonction normalizeData contrôle désormais la structure avant les migrations existantes : racine objet, champs principaux présents, types des textes/auteurs, tuples, listes et identifiants uniques, contacts, budgets et montants finis. Des limites de volume bornent les tableaux, textes et contenu sérialisé. Le contenu est cloné pour ne pas modifier la source reçue. Les migrations et les données personnalisées valides sont conservées.
+
+Réception Firebase : validation avant notification au carnet, puis contrôle au point d’application et avant cache. Une version refusée ne remplace ni data ni le cache sain et affiche un avertissement ; aucun envoi automatique de la version de secours. Les envois restent bloqués jusqu’à une réception valide. Une copie locale incorrecte ne bloque pas le démarrage et n’est pas effacée. Contrôle complémentaire du format de la valise locale avant sa migration.
+
+Règles : champs externes autorisés et obligatoires, contentJson chaîne non vide bornée, noms bornés, UID auteur égal au compte connecté, date de type timestamp égale à request.time, liste des sections bornée et limitée aux sections connues. Les autorisations par appareil sont conservées. Les lectures et anciens historiques ne sont pas migrés. Limite explicite : ces règles ne décodent pas contentJson ; elles ne constituent pas une validation métier du JSON côté serveur. Les clients corrigés refusent son contenu mal formé.
+
+Vérifications : suite Node habituelle, contrôles Edge (390 et 1280 pixels) avec SDK simulé, réception mal formée, rejet sans exception, cache sain intact, reprise après version valide, rechargement, copies locales du carnet et de la valise déjà corrompues sans écrasement automatique. Le test de budget contrôle toujours les libellés inertes et les calculs pour 4 à 7 personnes. L’émulateur local vérifie les nouvelles règles ; les refus attendus apparaissent en PERMISSION_DENIED. Aucun appel Firebase réel, aucune suppression ou modification de données partagées.
+
+Activation restante : publier les fichiers du site, puis republier le contenu complet de firestore.rules dans la console. Aucun nouvel appareil à créer pour les navigateurs déjà autorisés.
+
+Référence technique : [contrôle des champs et types Firestore](https://firebase.google.com/docs/firestore/security/rules-fields).

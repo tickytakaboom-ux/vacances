@@ -66,16 +66,20 @@ function subscribeTrip() {
     }
     try {
       const data = snapshot.data();
-      const remote = data.contentJson ? JSON.parse(data.contentJson) : data.content;
+      if (Object.hasOwn(data, "contentJson") && (typeof data.contentJson !== "string" || data.contentJson.length > 200000)) throw new TypeError("Contenu invalide");
+      const remote = window.normalizeTripData(Object.hasOwn(data, "contentJson") ? JSON.parse(data.contentJson) : data.content);
       if (!remote || typeof remote !== "object") throw new Error("Contenu absent");
+      const received = new CustomEvent("shared-trip-data", {detail: remote, cancelable: true});
+      if (!window.dispatchEvent(received)) throw new TypeError("Carnet refusé par l’application");
       lastRemoteData = structuredClone(remote);
-      window.dispatchEvent(new CustomEvent("shared-trip-data", {detail: remote}));
       ready = true;
       panel.hidden = true;
       if (data.updatedByName) document.querySelector("#lastEditor").textContent = "Dernière modification partagée par " + data.updatedByName + ".";
       setStatus(snapshot.metadata.hasPendingWrites ? "Synchronisation…" : "Synchronisé", snapshot.metadata.hasPendingWrites ? "" : "online");
     } catch (error) {
       ready = false;
+      panel.hidden = true;
+      window.reportTripDataError("Version partagée refusée : données mal formées. La dernière copie utilisable est conservée. Contacte Julian.");
       setStatus("Données partagées illisibles", "error");
       console.error("Firebase data parse failed", error);
     }
@@ -119,7 +123,12 @@ window.saveSharedTrip = async content => {
     return false;
   }
   const current = generation;
-  const saved = structuredClone(content);
+  let saved;
+  try { saved = window.normalizeTripData(content); } catch {
+    window.reportTripDataError("Envoi refusé : données mal formées. Aucun changement partagé n’a été envoyé.");
+    setStatus("Données non envoyées", "error");
+    return false;
+  }
   const changedSections = Object.keys(saved).filter(section => JSON.stringify(lastRemoteData?.[section]) !== JSON.stringify(saved[section]));
   setStatus("Synchronisation…");
   try {

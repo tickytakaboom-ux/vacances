@@ -8,16 +8,41 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/trips/embrun-2027/members/$(request.auth.uid)).data.active == true;
     }
 
+
+    function validContent(data) {
+      // contentJson est une chaîne opaque : le schéma interne est contrôlé par le client.
+      return data.contentJson is string && data.contentJson.size() > 0 && data.contentJson.size() <= 800000;
+    }
+    function validName(name) {
+      return name is string && name.size() > 0 && name.size() <= 80;
+    }
+    function validTrip(data) {
+      return data.keys().hasAll(['contentJson', 'updatedAt', 'updatedByUid', 'updatedByName'])
+        && data.keys().hasOnly(['contentJson', 'updatedAt', 'updatedByUid', 'updatedByName'])
+        && validContent(data) && validName(data.updatedByName)
+        && data.updatedByUid == request.auth.uid
+        && data.updatedAt is timestamp && data.updatedAt == request.time;
+    }
+    function validHistory(data) {
+      return data.keys().hasAll(['contentJson', 'changedAt', 'changedByUid', 'changedByName', 'changedSections'])
+        && data.keys().hasOnly(['contentJson', 'changedAt', 'changedByUid', 'changedByName', 'changedSections'])
+        && validContent(data) && validName(data.changedByName)
+        && data.changedByUid == request.auth.uid
+        && data.changedAt is timestamp && data.changedAt == request.time
+        && data.changedSections is list && data.changedSections.size() <= 32
+        && data.changedSections.hasOnly(['text', 'textAuthors', 'days', 'activities', 'budgets', 'faqs', 'checklist', 'shopping', 'ideas', 'assistanceContacts', 'dataVersion', 'activityVersion', 'faqVersion', 'checklistVersion', 'contactsVersion', 'ideasVersion', 'shoppingVersion', 'initialisation']);
+    }
+
     match /trips/embrun-2027 {
       allow read: if isMember();
       allow create, update: if isMember()
-        && request.resource.data.updatedByUid == request.auth.uid;
+        && validTrip(request.resource.data);
       allow delete: if false;
     }
     match /trips/embrun-2027/history/{entryId} {
       allow read: if isMember();
       allow create: if isMember()
-        && request.resource.data.changedByUid == request.auth.uid;
+        && validHistory(request.resource.data);
       allow update, delete: if false;
     }
     match /trips/embrun-2027/members/{memberUid} {
