@@ -122,3 +122,15 @@ Commandes de vérification :
 Pour le test navigateur, Playwright doit être accessible par require('playwright') ou par le chemin de module fourni dans PLAYWRIGHT_MODULE ; Microsoft Edge est utilisé. Aucune dépendance ajoutée à l’application. Les requêtes externes sont bloquées : aucun appel ou changement Firebase réel.
 
 Aucun changement de règles, du format ou des versions de données, aucun effacement ni migration. La création du commit a été autorisée explicitement par le responsable après présentation du correctif et des validations. Message retenu : fix: rendre les libellés du budget comme du texte. Aucun push ni déploiement effectué à cette étape. Le rapport d’audit était déjà non suivi avant ce correctif.
+
+## Correctif du deuxième constat — préparé localement, activation en ligne restante
+
+Choix explicite : conserver Firebase Anonymous Auth et autoriser séparément chaque navigateur. Les règles exigent un document trips/embrun-2027/members/{uid} avec active de type booléen à true. Le client peut seulement consulter son propre document membre ; il ne peut ni lister les membres ni accorder un accès. Les UID d’auteur des nouvelles écritures doivent correspondre à la connexion. Les droits des amis sur le contenu restent identiques ; aucun rôle administrateur serveur n’est introduit.
+
+Le client affiche le code d’appareil et attend une autorisation vérifiée par le serveur avant de lire le carnet ou d’envoyer des changements. Retrait d’autorisation : arrêt de l’écoute et blocage des nouveaux envois. Les règles restent l’autorité même pour un client modifié. Aucune réinitialisation du carnet absent, aucun envoi automatique des changements antérieurs à l’autorisation. Données existantes, historique et valise personnelle conservés ; les copies locales antérieures restent consultables.
+
+Preuve rouge sur anciennes règles : les tests détectent notamment l’accès des anonymes extérieurs, les accès révoqués et l’usurpation d’UID auteur. Preuve verte : tests réels Rules Unit Testing sur émulateur Firestore du projet fictif demo-vacances-access. Les refus PERMISSION_DENIED dans les sorties des tests sont attendus. Aucun accès au projet réel. Tests durables : tests/firestore-rules.test.mjs et lanceur tests/run-firestore-rules.ps1.
+
+Tests client : tests/firebase-access.test.mjs vérifie attente, chargement depuis le serveur, révocation, absence de publication du cache et erreurs. tests/firebase-access-browser.cjs vérifie l’interface en Edge à 390 et 1280 pixels avec SDK Firebase simulé et autres requêtes externes bloquées. La régression du budget reste vérifiée séparément.
+
+Déploiement restant : publication des fichiers du site, création par Julian de son propre document membre dans la console, publication manuelle de firestore.rules, puis vérification avec un navigateur autorisé et un navigateur inconnu. Le README détaille ces étapes. Les règles en production n’ont pas été modifiées par ce correctif local. Le constat 2 ne sera considéré résolu en production qu’après activation et contrôle.

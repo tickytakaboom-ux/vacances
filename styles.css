@@ -41,3 +41,7 @@
 .budget-layout > *, .activity-card > * { min-width:0; }
 .activity-card strong { overflow-wrap:anywhere; }
 @media(max-width:600px) { .budget-layout { grid-template-columns:minmax(0,1fr); } .total-card strong { font-size:clamp(40px,12vw,68px); } .budget-row { grid-template-columns:minmax(0,1fr) auto; gap:8px; } .budget-row strong { font-size:16px; } }
+
+.device-access{position:relative;max-width:760px;margin:24px auto;padding:24px;border:1px solid var(--ink,#262a25);border-radius:20px;background:var(--cream,#f6f2e8)}
+.device-access[hidden]{display:none}
+.device-access p{margin:12px 0}.device-access label,.device-access small{display:block}.device-access input{display:block;width:100%;box-sizing:border-box;margin:8px 0 16px;padding:12px;border:1px solid #aaa;border-radius:8px;font:inherit}.device-access-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}@media(max-width:800px){.device-access{margin:20px 16px}}

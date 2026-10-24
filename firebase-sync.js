@@ -12,112 +12,143 @@ const firebaseConfig = {
   measurementId: "G-TZ4QFX9QHK"
 };
 
-const userChip = document.querySelector("#userChip");
-const syncDot = document.querySelector("#syncDot");
-const syncLabel = document.querySelector("#syncLabel");
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+
+const auth = getAuth(initializeApp(firebaseConfig));
+const db = getFirestore(auth.app);
 const tripRef = doc(db, "trips", "embrun-2027");
 let user = null;
-let pendingData = null;
-let userName = localStorage.getItem("zigotos-first-name-v1") || "";
+let connecting = false;
+let allowed = false;
+let ready = false;
+let stopTrip = null;
+let stopMember = null;
+let generation = 0;
 let lastRemoteData = null;
+let userName = localStorage.getItem("zigotos-first-name-v1") || "";
 
+const panel = document.querySelector("#deviceAccess");
+const message = document.querySelector("#deviceAccessMessage");
+const code = document.querySelector("#deviceCode");
 function setStatus(label, state = "") {
-  syncDot.classList.remove("online", "error");
-  if (state) syncDot.classList.add(state);
-  userChip.title = label;
-  syncLabel.textContent = label;
-  syncLabel.classList.toggle("error", state === "error");
-  if (state === "online" || state === "error") window.dispatchEvent(new Event("trip-sync-ready"));
-  if (state === "error") document.querySelector("#lastEditor").textContent = "Firebase n'est pas connecté : les changements restent uniquement sur cet appareil.";
+  document.querySelector("#syncDot").classList.remove("online", "error");
+  if (state) document.querySelector("#syncDot").classList.add(state);
+  document.querySelector("#syncLabel").textContent = label;
+  document.querySelector("#syncLabel").classList.toggle("error", state === "error");
+  document.querySelector("#userChip").title = label;
+  window.dispatchEvent(new Event("trip-sync-ready"));
 }
-
-async function writeSharedData(content) {
-  if (!user || !userName) {
-    pendingData = content;
-    setStatus("En attente de connexion");
-    return;
-  }
-  setStatus("Synchronisation…");
-  try {
-    const changedSections = lastRemoteData
-      ? ["text", "days", "activities", "budgets", "faqs", "checklist", "shopping", "ideas", "assistanceContacts"].filter(section => JSON.stringify(lastRemoteData[section]) !== JSON.stringify(content[section]))
-      : ["initialisation"];
-    await setDoc(tripRef, {
-      contentJson: JSON.stringify(content),
-      updatedAt: serverTimestamp(),
-      updatedByUid: user.uid,
-      updatedByName: userName
-    });
-    lastRemoteData = structuredClone(content);
-    setStatus("Synchronisé", "online");
-    try {
-      await addDoc(collection(db, "trips", "embrun-2027", "history"), {
-        contentJson: JSON.stringify(content),
-        changedSections,
-        changedByUid: user.uid,
-        changedByName: userName,
-        changedAt: serverTimestamp()
-      });
-    } catch (historyError) {
-      console.warn("Firebase history save failed", historyError);
+function suspend(label) {
+  allowed = false;
+  ready = false;
+  generation++;
+  stopTrip?.();
+  stopTrip = null;
+  lastRemoteData = null;
+  panel.hidden = false;
+  message.textContent = label;
+  setStatus("Appareil non autorisé", "error");
+  document.querySelector("#lastEditor").textContent = "Aucun changement n’est envoyé au carnet partagé depuis cet appareil.";
+}
+function subscribeTrip() {
+  if (stopTrip) return;
+  allowed = true;
+  ready = false;
+  const current = ++generation;
+  setStatus("Chargement du carnet…");
+  stopTrip = onSnapshot(tripRef, {includeMetadataChanges: true}, snapshot => {
+    if (!allowed || current !== generation || snapshot.metadata.fromCache) return;
+    if (!snapshot.exists()) {
+      ready = false;
+      panel.hidden = false;
+      message.textContent = "Le carnet partagé est introuvable. Contacte Julian : aucune copie locale ne sera envoyée automatiquement.";
+      setStatus("Carnet introuvable", "error");
+      return;
     }
-    return true;
-  } catch (error) {
-    console.error("Firebase save failed", error);
-    pendingData = content;
-    setStatus("Sauvegardé localement", "error");
-    return false;
-  }
+    try {
+      const data = snapshot.data();
+      const remote = data.contentJson ? JSON.parse(data.contentJson) : data.content;
+      if (!remote || typeof remote !== "object") throw new Error("Contenu absent");
+      lastRemoteData = structuredClone(remote);
+      window.dispatchEvent(new CustomEvent("shared-trip-data", {detail: remote}));
+      ready = true;
+      panel.hidden = true;
+      if (data.updatedByName) document.querySelector("#lastEditor").textContent = "Dernière modification partagée par " + data.updatedByName + ".";
+      setStatus(snapshot.metadata.hasPendingWrites ? "Synchronisation…" : "Synchronisé", snapshot.metadata.hasPendingWrites ? "" : "online");
+    } catch (error) {
+      ready = false;
+      setStatus("Données partagées illisibles", "error");
+      console.error("Firebase data parse failed", error);
+    }
+  }, error => {
+    if (current !== generation) return;
+    suspend("Accès au carnet refusé ou connexion interrompue. Vérifie ton autorisation puis réessaie.");
+    console.warn("Firebase trip access failed", error);
+  });
 }
-
-window.saveSharedTrip = content => writeSharedData(structuredClone(content));
-
+function watchMembership() {
+  stopMember?.();
+  suspend("Envoie ce code d’appareil à Julian pour qu’il autorise ton accès. Chaque navigateur doit être autorisé séparément.");
+  stopMember = onSnapshot(doc(db, "trips", "embrun-2027", "members", user.uid), {includeMetadataChanges: true}, snapshot => {
+    if (snapshot.metadata.fromCache) {
+      suspend("Connexion nécessaire pour vérifier l’autorisation de cet appareil.");
+      return;
+    }
+    if (snapshot.exists() && snapshot.data().active === true) subscribeTrip();
+    else suspend("Envoie ce code d’appareil à Julian pour qu’il autorise ton accès. Tes modifications locales ne seront pas envoyées automatiquement.");
+  }, error => {
+    suspend("Autorisation impossible à vérifier. Julian doit activer les nouvelles règles Firebase ; tu peux déjà lui transmettre ce code.");
+    console.warn("Firebase membership check failed", error);
+  });
+}
 async function connect() {
+  if (connecting) return;
+  connecting = true;
   try {
     setStatus("Connexion…");
-    const credential = await signInAnonymously(auth);
-    user = credential.user;
-    onSnapshot(tripRef, async snapshot => {
-      if (snapshot.exists()) {
-        const snapshotData = snapshot.data();
-        let remote = null;
-        try {
-          remote = snapshotData.contentJson ? JSON.parse(snapshotData.contentJson) : snapshotData.content;
-        } catch (parseError) {
-          console.error("Firebase data parse failed", parseError);
-          setStatus("Données partagées illisibles", "error");
-          return;
-        }
-        lastRemoteData = remote ? structuredClone(remote) : null;
-        if (remote) window.dispatchEvent(new CustomEvent("shared-trip-data", { detail: remote }));
-        const editor = snapshotData.updatedByName;
-        const editorLabel = document.querySelector("#lastEditor");
-        if (editor) editorLabel.textContent = `Dernière modification partagée par ${editor}.`;
-        setStatus(snapshot.metadata.hasPendingWrites ? "Synchronisation…" : "Synchronisé", snapshot.metadata.hasPendingWrites ? "" : "online");
-      } else {
-        await writeSharedData(window.getTripData());
-      }
-    }, error => {
-      console.error("Firebase listener failed", error);
-      setStatus("Mode local", "error");
-    });
-    if (pendingData) {
-      const queued = pendingData;
-      pendingData = null;
-      await writeSharedData(queued);
-    }
+    user = (await signInAnonymously(auth)).user;
+    code.value = user.uid;
+    watchMembership();
   } catch (error) {
-    console.error("Firebase connection failed", error);
-    setStatus("Mode local", "error");
-  }
+    suspend("Connexion impossible. Réessaie lorsque le réseau est disponible.");
+    console.warn("Firebase connection failed", error);
+  } finally { connecting = false; }
 }
-
-window.addEventListener("trip-user-ready", event => {
-  userName = event.detail;
-  if (!user) connect();
+window.saveSharedTrip = async content => {
+  if (!user || !userName || !allowed || !ready) {
+    setStatus("Sauvegardé sur cet appareil", "error");
+    return false;
+  }
+  const current = generation;
+  const saved = structuredClone(content);
+  const changedSections = Object.keys(saved).filter(section => JSON.stringify(lastRemoteData?.[section]) !== JSON.stringify(saved[section]));
+  setStatus("Synchronisation…");
+  try {
+    await setDoc(tripRef, {contentJson: JSON.stringify(saved), updatedAt: serverTimestamp(), updatedByUid: user.uid, updatedByName: userName});
+    if (!allowed || current !== generation) return false;
+    lastRemoteData = saved;
+    try {
+      await addDoc(collection(db, "trips", "embrun-2027", "history"), {contentJson: JSON.stringify(saved), changedSections, changedByUid: user.uid, changedByName: userName, changedAt: serverTimestamp()});
+    } catch (error) { console.warn("Firebase history save failed", error); }
+    if (allowed && current === generation) setStatus("Synchronisé", "online");
+    return true;
+  } catch (error) {
+    if (error.code === "permission-denied") suspend("Cet appareil n’est plus autorisé. Contacte Julian.");
+    else setStatus("Sauvegardé sur cet appareil", "error");
+    console.warn("Firebase save failed", error);
+    return false;
+  }
+};
+document.querySelector("#copyDeviceCode").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(code.value);
+    message.textContent = "Code copié. Transmets-le à Julian pour autoriser cet appareil.";
+  } catch {
+    code.focus(); code.select();
+    message.textContent = "Sélectionne et copie le code ci-dessus pour le transmettre à Julian.";
+  }
 });
-
+document.querySelector("#retryDeviceAccess").addEventListener("click", () => {
+  if (user) watchMembership(); else connect();
+});
+window.addEventListener("trip-user-ready", event => { userName = event.detail; if (!user) connect(); });
 if (userName) connect();

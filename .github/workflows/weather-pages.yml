@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: '24'
       - name: Vérifier le cache et les replis
-        run: node --test tests/weather.test.mjs tests/places.test.mjs tests/site.test.mjs
+        run: node --test tests/weather.test.mjs tests/places.test.mjs tests/site.test.mjs tests/firebase-access.test.mjs
       - name: Actualiser Embrun
         env:
           MET_NO_USER_AGENT: LesZigotosEmbrun/1.0 https://github.com/tickytakaboom-ux/vacances
