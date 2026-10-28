@@ -5,12 +5,12 @@
     "longitude": 6.4768568,
     "radiusKm": 4
   },
-  "checkedAt": "2026-10-27T00:29:43.964Z",
+  "checkedAt": "2026-10-28T02:20:19.064Z",
   "groups": {
     "restaurants": {
       "status": "fresh",
-      "fetchedAt": "2026-10-27T00:29:43.964Z",
-      "nextAttemptAt": "2026-10-28T00:29:43.964Z",
+      "fetchedAt": "2026-10-28T02:20:19.064Z",
+      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
       "places": [
         {
           "id": "node/1893360150",
@@ -196,8 +196,8 @@
     },
     "courses": {
       "status": "fresh",
-      "fetchedAt": "2026-10-27T00:29:43.964Z",
-      "nextAttemptAt": "2026-10-28T00:29:43.964Z",
+      "fetchedAt": "2026-10-28T02:20:19.064Z",
+      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
       "places": [
         {
           "id": "way/66295249",
@@ -266,8 +266,8 @@
     },
     "sorties": {
       "status": "fresh",
-      "fetchedAt": "2026-10-27T00:29:43.964Z",
-      "nextAttemptAt": "2026-10-28T00:29:43.964Z",
+      "fetchedAt": "2026-10-28T02:20:19.064Z",
+      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
       "places": [
         {
           "id": "node/5028495557",
