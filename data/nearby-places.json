@@ -5,12 +5,12 @@
     "longitude": 6.4768568,
     "radiusKm": 4
   },
-  "checkedAt": "2026-10-28T02:20:19.064Z",
+  "checkedAt": "2026-10-29T08:34:45.367Z",
   "groups": {
     "restaurants": {
       "status": "fresh",
-      "fetchedAt": "2026-10-28T02:20:19.064Z",
-      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
+      "fetchedAt": "2026-10-29T08:34:45.367Z",
+      "nextAttemptAt": "2026-10-30T08:34:45.367Z",
       "places": [
         {
           "id": "node/1893360150",
@@ -148,6 +148,15 @@
           "source": "OpenStreetMap / Photon"
         },
         {
+          "id": "node/14304530941",
+          "name": "Le grand salon",
+          "category": "restaurants",
+          "latitude": 44.5641742,
+          "longitude": 6.4961916,
+          "address": "Place Barthelon 05200 Embrun",
+          "source": "OpenStreetMap / Photon"
+        },
+        {
           "id": "node/1728784133",
           "name": "Cap 26",
           "category": "restaurants",
@@ -182,22 +191,13 @@
           "longitude": 6.4957863,
           "address": "16 Place du General Dosse 05200 Embrun",
           "source": "OpenStreetMap / Photon"
-        },
-        {
-          "id": "node/3053677793",
-          "name": "Ô p'tit bistrot",
-          "category": "restaurants",
-          "latitude": 44.5387027,
-          "longitude": 6.4959849,
-          "address": "Place du Village 05200 Baratier",
-          "source": "OpenStreetMap / Photon"
         }
       ]
     },
     "courses": {
       "status": "fresh",
-      "fetchedAt": "2026-10-28T02:20:19.064Z",
-      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
+      "fetchedAt": "2026-10-29T08:34:45.367Z",
+      "nextAttemptAt": "2026-10-30T08:34:45.367Z",
       "places": [
         {
           "id": "way/66295249",
@@ -232,7 +232,7 @@
           "category": "courses",
           "latitude": 44.5504027,
           "longitude": 6.4878034,
-          "address": "Route de Vachères 05200 Embrun",
+          "address": "Avenue des Métiers 05200 Embrun",
           "source": "OpenStreetMap / Photon"
         },
         {
@@ -266,8 +266,8 @@
     },
     "sorties": {
       "status": "fresh",
-      "fetchedAt": "2026-10-28T02:20:19.064Z",
-      "nextAttemptAt": "2026-10-29T02:20:19.064Z",
+      "fetchedAt": "2026-10-29T08:34:45.367Z",
+      "nextAttemptAt": "2026-10-30T08:34:45.367Z",
       "places": [
         {
           "id": "node/5028495557",
