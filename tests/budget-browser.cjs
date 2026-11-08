@@ -57,6 +57,9 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     }
     assert.deepEqual(await page.evaluate(()=>window.getTripData()),beforeScenarios,'le choix du scénario ne modifie aucune donnée partagée');
     await page.selectOption('#transportSelect','train');
+    assert.equal(await page.locator('#foodBudgetSummary').count(),1);
+    assert.match(await page.locator('#foodBudgetSummary').textContent(),/Environ 236 € pour le groupe/);
+    assert.match(await page.locator('#foodBudgetSummary').textContent(),/352 € pour le groupe/);
     const payload = '<img src="/__budget_missing__.png" onerror="window.__budgetXss=true">';
     const accented = 'Péage & séjour "été" <amis>';
     const original = await page.evaluate(() => window.getTripData());
