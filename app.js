@@ -1,3 +1,17 @@
+// Le choix est une simulation locale : il ne réserve aucun transport et ne modifie pas le carnet partagé.
+const transportScenarios = {
+  train: {label: "100 % Train", amount: 1400, note: "Référence budgétaire temporaire : provision de 200 € par personne pour le train aller-retour et le préacheminement depuis Maurepas. Aucun billet réservé ; les tarifs 2027 ne sont pas connus."},
+  cars: {label: "2 voitures", amount: 612, note: "En pause : référence historique de deux Clio V, carburant et péages aller-retour. Disponibilité des véhicules et assurances non confirmées."},
+  mixed: {label: "Mixte (C1 + Train)", amount: 1100, note: "En pause : provision de 300 € pour la C1 et de 800 € pour quatre billets de train à 200 € chacun. Lucas et deux passagers en C1, quatre personnes en train. Disponibilité de la C1, assurance et prix des billets non confirmés."}
+};
+function calculateScenarioBudget(budget, scenarioId) {
+  const scenario = Object.hasOwn(transportScenarios, scenarioId) ? transportScenarios[scenarioId] : transportScenarios.train;
+  const items = budget.items.map((item, index) => [item[0], index === 1 ? scenario.amount : item[1]]);
+  const totalCents = items.reduce((sum, item) => sum + Math.round(item[1] * 100), 0);
+  const maximumCashCents = totalCents + 26000;
+  return {scenario, items, totalCents, maximumCashCents, marginCents: 385000 - maximumCashCents};
+}
+
 const initialData = {
   dataVersion: 3,
   activityVersion: 2,
@@ -44,7 +58,7 @@ const initialData = {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "5": { total: 1912.10, perPerson: 382.42, items: [["Chalet", 188.42], ["Essence", 36], ["Péage", 18], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "6": { total: 2266.72, perPerson: 377.79, items: [["Chalet", 157.79], ["Essence", 50], ["Péage", 30], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
-    "7": {"revision":"embrun-2027-train-provision-v1","itemBasis":"group","total":3324.34,"perPerson":474.91,"items":[["Hébergement + taxe de séjour",951.34],["Transport",1400],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",300],["Frais communs et imprévus",50]]}
+    "7": {"revision":"embrun-2027-train-provision-v1","itemBasis":"group","total":3324.34,"perPerson":474.91,"items":[["Hébergement + taxe de séjour",951.34],["Transport",transportScenarios.train.amount],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",300],["Frais communs et imprévus",50]]}
   },
   faqs: [
     ["D'où part-on et à quelle heure ?", "Le départ se fera depuis Maurepas, à 7 h au plus tard."],
@@ -470,21 +484,20 @@ function updateListTabs() {
 }
 
 function updateBudget() {
-  const count = Number(document.querySelector("#peopleSelect").value);
-  const budget = data.budgets[count];
-  const groupAmounts = budget.itemBasis === "group";
-  const totalCents = groupAmounts ? budget.items.reduce((sum, item) => sum + Math.round(item[1] * 100), 0) : Math.round(budget.total * 100);
+  const count = 7;
+  const budget = data.budgets["7"];
+  const {scenario, items, totalCents, marginCents} = calculateScenarioBudget(budget, document.querySelector("#transportSelect").value);
   const total = totalCents / 100;
-  const perPerson = groupAmounts ? total / count : budget.perPerson;
+  const perPerson = total / count;
   document.querySelector("#perPersonTotal").textContent = euro.format(perPerson);
   document.querySelector("#groupTotal").textContent = `Budget hors cautions : ${euro.format(total)} pour le groupe`;
-  const rows = budget.items.map(item => {
+  const rows = items.map(item => {
     const row = document.createElement("div");
     row.className = "budget-row";
     const label = document.createElement("span");
     label.textContent = item[0];
     const amount = document.createElement("strong");
-    amount.textContent = `${euro.format(item[1])}${groupAmounts ? " pour le groupe" : " / pers."}`;
+    amount.textContent = `${euro.format(item[1])} pour le groupe`;
     row.append(label, amount);
     return row;
   });
@@ -497,6 +510,8 @@ function updateBudget() {
   document.querySelector("#cashWithBothDeposits").textContent = euro.format((totalCents + 26000) / 100) + " · " + euro.format((totalCents + 26000) / 100 / count) + " / pers.";
   document.querySelector("#cleaningDepositPerPerson").textContent = euro.format(60 / count) + " / pers.";
   document.querySelector("#savingsGoal").textContent = euro.format(550) + " / pers. · " + euro.format(550 * count) + " pour le groupe";
+  document.querySelector("#savingsMargin").textContent = euro.format(marginCents / 100) + " pour le groupe · " + euro.format(marginCents / 100 / count) + " / pers.";
+  document.querySelector("#transportScenarioNote").textContent = scenario.note;
 }
 
 function updateCountdown() {
@@ -561,7 +576,7 @@ function hasUnsavedDrafts() {
   });
 }
 
-document.querySelector("#peopleSelect").addEventListener("change", updateBudget);
+document.querySelector("#transportSelect").addEventListener("change", updateBudget);
 document.querySelector("#faqShowAll").addEventListener("click", () => { showAllFaqs = !showAllFaqs; render(); });
 document.querySelector("#backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
 window.addEventListener("scroll", () => document.querySelector("#backToTop").classList.toggle("visible", scrollY > 700), { passive: true });

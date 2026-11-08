@@ -35,6 +35,27 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#budget .budget-row,#budget .budget-follow-up article')].every(el=>{const box=el.getBoundingClientRect();return box.left>=0 && box.right<=innerWidth;})),true);
       await page.locator('#budget').screenshot({path:'.preview/budget-'+width+'.png'});
     }
+    const beforeScenarios=await page.evaluate(()=>window.getTripData());
+    const scenarios={train:[3324.34,474.91,3524.34,503.48,3584.34,512.05,265.66,37.95,1400],cars:[2536.34,362.33,2736.34,390.91,2796.34,399.48,1053.66,150.52,612],mixed:[3024.34,432.05,3224.34,460.62,3284.34,469.19,565.66,80.81,1100]};
+    const euros=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
+    for(const width of [390,1280]){
+      await page.setViewportSize({width,height:1000});
+      for(const [scenario,values] of Object.entries(scenarios)){
+        await page.selectOption('#transportSelect',scenario);
+        assert.equal(await page.locator('#statPeople').textContent(),'7');
+        assert.equal(await page.locator('#perPersonTotal').textContent(),euros.format(values[1]));
+        assert.equal(await page.locator('#groupTotal').textContent(),'Budget hors cautions : '+euros.format(values[0])+' pour le groupe');
+        assert.equal(await page.locator('#cashWithDeposit').textContent(),euros.format(values[2])+' · '+euros.format(values[3])+' / pers.');
+        assert.equal(await page.locator('#cashWithBothDeposits').textContent(),euros.format(values[4])+' · '+euros.format(values[5])+' / pers.');
+        assert.equal(await page.locator('#savingsMargin').textContent(),euros.format(values[6])+' pour le groupe · '+euros.format(values[7])+' / pers.');
+        assert.equal(await page.locator('#budgetList .budget-row strong').nth(1).textContent(),euros.format(values[8])+' pour le groupe');
+        assert.equal(await page.locator('#savingsGoal').textContent(),euros.format(550)+' / pers. · '+euros.format(3850)+' pour le groupe');
+        assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#budget .budget-row,#transportSelect,#budget .budget-follow-up article')].every(el=>{const rect=el.getBoundingClientRect();return rect.left>=0 && rect.right<=innerWidth;})),true);
+        await page.locator('#budget').screenshot({path:'.preview/scenario-'+scenario+'-'+width+'.png'});
+      }
+    }
+    assert.deepEqual(await page.evaluate(()=>window.getTripData()),beforeScenarios,'le choix du scénario ne modifie aucune donnée partagée');
+    await page.selectOption('#transportSelect','train');
     const payload = '<img src="/__budget_missing__.png" onerror="window.__budgetXss=true">';
     const accented = 'Péage & séjour "été" <amis>';
     const original = await page.evaluate(() => window.getTripData());
@@ -68,7 +89,8 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.reload();
     await page.waitForFunction(() => typeof window.getTripData === 'function');
     await check('rechargement du cache');
-    console.log('PASS budget : dépenses, cautions, épargne, mobile/bureau, réception et cache, libellés inertes ; réseau externe bloqué.');
+    assert.equal(await page.locator('#transportSelect').inputValue(),'train');
+    console.log('PASS budget : 3 scénarios x mobile/bureau, dépenses, cautions, marges, épargne, sélection locale, réception/cache et libellés inertes ; réseau externe bloqué.');
   } finally {
     server.closeAllConnections();
     if (browser) await browser.close();

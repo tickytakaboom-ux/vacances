@@ -4,7 +4,7 @@ import vm from "node:vm";
 import {readFile} from "node:fs/promises";
 const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
 const normalize = source.slice(source.indexOf("function normalizeData("), source.indexOf("async function saveData("));
-const functions = vm.runInNewContext(source.slice(0, source.indexOf("const key =")) + normalize + ";({initialData,normalizeData})", {structuredClone});
+const functions = vm.runInNewContext(source.slice(0, source.indexOf("const key =")) + normalize + ";({initialData,normalizeData,calculateScenarioBudget})", {structuredClone});
 test("les textes personnalisés et données du groupe survivent à la retouche", () => {
   const data = structuredClone(functions.initialData);
   data.text.intro = "Notre texte personnalisé";
@@ -47,11 +47,11 @@ test("au départ le compteur affiche un message sans nombre négatif", () => {
 });
 
 const budgetFunction = source.slice(source.indexOf("function updateBudget("), source.indexOf("function updateCountdown("));
-test("les libellés du budget sont du texte et les montants restent inchangés pour 4 à 7 personnes", () => {
+test("les libellés du budget à sept personnes restent du texte", () => {
   const data = structuredClone(functions.initialData);
   const payload = '<img src="/missing.png" onerror="window.__budgetXss=true">';
   const labels = [payload, 'Péage & séjour "été" <amis>'];
-  for (const count of [4, 5, 6, 7]) {
+  for (const count of [7]) {
     data.budgets[count].items[0][0] = labels[0];
     data.budgets[count].items[1][0] = labels[1];
     const snapshot = JSON.stringify(data);
@@ -63,9 +63,9 @@ test("les libellés du budget sont du texte et les montants restent inchangés p
       if (!nodes.has(selector)) nodes.set(selector, element("div"));
       return nodes.get(selector);
     }};
-    document.querySelector("#peopleSelect").value = String(count);
+    document.querySelector("#transportSelect").value = "train";
     const euro = new Intl.NumberFormat("fr-FR", {style:"currency", currency:"EUR"});
-    vm.runInNewContext(budgetFunction + ";updateBudget()", {document, data, euro});
+    vm.runInNewContext(budgetFunction + ";updateBudget()", {document, data, euro, calculateScenarioBudget:functions.calculateScenarioBudget});
     const rows = nodes.get("#budgetList").children;
     assert.equal(rows.length, data.budgets[count].items.length);
     rows.forEach((row, i) => {
@@ -108,4 +108,16 @@ test('le budget à sept distingue dépenses, cautions et objectif avec arrondis 
  const before=structuredClone(old);const normalized=functions.normalizeData(old);assert.equal(normalized.budgets['7'].total,3324.34);assert.equal(normalized.budgets['7'].itemBasis,'group');assert.equal(normalized.text.intro,before.text.intro);assert.equal(normalized.days[0][1],before.days[0][1]);
  for(const key of ['checklist','shopping','assistanceContacts','faqs','ideas'])assert.equal(JSON.stringify(normalized[key]),JSON.stringify(before[key]));
  for(const count of ['4','5','6'])assert.equal(JSON.stringify(normalized.budgets[count]),JSON.stringify(before.budgets[count]));assert.equal(JSON.stringify(old),JSON.stringify(before));
+});
+
+test('trois scénarios : tronc commun unique, dépenses, cautions et marges calculés en centimes',()=>{
+ const format=value=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
+ const expected={train:[332434,'474,91',358434,'512,05',26566,'37,95'],cars:[253634,'362,33',279634,'399,48',105366,'150,52'],mixed:[302434,'432,05',328434,'469,19',56566,'80,81']};
+ const budget=functions.initialData.budgets['7'];const before=JSON.stringify(budget);
+ for(const [scenario,values] of Object.entries(expected)){
+  const result=functions.calculateScenarioBudget(budget,scenario);
+  assert.equal(result.totalCents,values[0]);assert.equal(format(result.totalCents/100/7),values[1]);assert.equal(result.maximumCashCents,values[2]);assert.equal(format(result.maximumCashCents/100/7),values[3]);assert.equal(result.marginCents,values[4]);assert.equal(format(result.marginCents/100/7),values[5]);
+  assert.equal(result.items.filter((_,i)=>i!==1).reduce((sum,item)=>sum+Math.round(item[1]*100),0),192434);
+ }
+ assert.equal(JSON.stringify(budget),before);assert.equal(functions.calculateScenarioBudget(budget,'__proto__').totalCents,332434);
 });
