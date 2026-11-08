@@ -74,14 +74,14 @@ test("les libellés du budget sont du texte et les montants restent inchangés p
       assert.equal(row.children[0].tagName, "span");
       assert.equal(row.children[0].textContent, data.budgets[count].items[i][0]);
       assert.equal(row.children[1].tagName, "strong");
-      assert.equal(row.children[1].textContent, euro.format(data.budgets[count].items[i][1]) + " / pers.");
+      assert.equal(row.children[1].textContent, euro.format(data.budgets[count].items[i][1]) + (data.budgets[count].itemBasis === "group" ? " pour le groupe" : " / pers."));
     });
     assert.equal(nodes.get("#perPersonTotal").textContent, euro.format(data.budgets[count].perPerson));
-    assert.equal(nodes.get("#groupTotal").textContent, "Total du groupe : " + euro.format(data.budgets[count].total));
+    assert.equal(nodes.get("#groupTotal").textContent, "Budget hors cautions : " + euro.format(data.budgets[count].total) + " pour le groupe");
     assert.equal(nodes.get("#depositPerPerson").textContent, euro.format(275.70 / count) + " / pers.");
     assert.equal(nodes.get("#depositCautionPerPerson").textContent, euro.format(200 / count) + " / pers.");
     assert.equal(nodes.get("#statPeople").textContent, count);
-    assert.equal(nodes.get("#statPrice").textContent, euro.format(data.budgets[count].perPerson) + " + " + euro.format(200 / count) + " = " + euro.format(data.budgets[count].perPerson + 200 / count));
+    assert.equal(nodes.get("#statPrice").textContent, euro.format(data.budgets[count].perPerson));
     assert.equal(JSON.stringify(data), snapshot);
   }
 });
@@ -99,4 +99,13 @@ test("la validation conserve les champs personnalisés et les anciennes versions
 });
 test('les identifiants des contacts sont uniques et non vides',()=>{
  for(const id of ['', '   ', 'car-1']) {const data=structuredClone(functions.initialData);data.assistanceContacts[1].id=id;assert.throws(()=>functions.normalizeData(data));}
+});
+
+test('le budget à sept distingue dépenses, cautions et objectif avec arrondis corrects',()=>{
+ const budget=functions.initialData.budgets['7'];const cents=budget.items.reduce((sum,item)=>sum+Math.round(item[1]*100),0);
+ assert.equal(cents,332434);assert.equal(budget.total,3324.34);assert.equal((cents/100/7).toFixed(2),'474.91');assert.equal(((cents+20000)/100/7).toFixed(2),'503.48');assert.equal(((cents+26000)/100/7).toFixed(2),'512.05');assert.equal((200/7).toFixed(2),'28.57');assert.equal(550*7,3850);
+ const old=structuredClone(functions.initialData);delete old.budgets['7'].revision;old.budgets['7'].total=2411.34;old.text.intro='Texte du groupe';old.days[0][1]='Programme du groupe';
+ const before=structuredClone(old);const normalized=functions.normalizeData(old);assert.equal(normalized.budgets['7'].total,3324.34);assert.equal(normalized.budgets['7'].itemBasis,'group');assert.equal(normalized.text.intro,before.text.intro);assert.equal(normalized.days[0][1],before.days[0][1]);
+ for(const key of ['checklist','shopping','assistanceContacts','faqs','ideas'])assert.equal(JSON.stringify(normalized[key]),JSON.stringify(before[key]));
+ for(const count of ['4','5','6'])assert.equal(JSON.stringify(normalized.budgets[count]),JSON.stringify(before.budgets[count]));assert.equal(JSON.stringify(old),JSON.stringify(before));
 });

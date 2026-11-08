@@ -19,7 +19,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <title>Les Zigotos à Embrun</title>
-  <link rel="stylesheet" href="styles.css?v=20261024-2">
+  <link rel="stylesheet" href="styles.css?v=20261108-budget-1">
   <link rel="stylesheet" href="weather.css?v=20261011-4">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="map.css?v=20261011-4">
@@ -99,7 +99,7 @@
       <div class="stat-grid">
         <article class="stat-card"><strong id="statPeople">7</strong><span>zigotos</span></article>
         <article class="stat-card"><strong>1</strong><span>semaine</span></article>
-        <article class="stat-card accent"><strong id="statPrice">344,48 € + 28,57 € = 373,05 €</strong><span>budget + caution par personne</span></article>
+        <article class="stat-card accent"><strong id="statPrice">474,91 €</strong><span>budget prévisionnel hors cautions par personne</span></article>
       </div>
     </section>
 
@@ -158,21 +158,14 @@
           <p class="eyebrow dark">Budget prévisionnel</p>
           <h2>Le budget<br>du séjour.</h2>
         </div>
-        <label class="people-control">Participants
-          <select id="peopleSelect" aria-label="Nombre de participants">
-            <option value="4">4 personnes</option>
-            <option value="5">5 personnes</option>
-            <option value="6">6 personnes</option>
-            <option value="7" selected>7 personnes</option>
-          </select>
-        </label>
+        <p class="people-control">7 personnes · 7 nuits</p><input id="peopleSelect" type="hidden" value="7">
       </div>
       <div class="budget-layout">
         <article class="total-card">
           <p>Estimation par personne</p>
-          <strong id="perPersonTotal">344,48 €</strong>
-          <span id="groupTotal">Total du groupe : 2 411,34 €</span>
-          <small>Taxes du chalet incluses</small>
+          <strong id="perPersonTotal">474,91 €</strong>
+          <span id="groupTotal">Budget hors cautions : 3 324,34 € pour le groupe</span>
+          <small>Hébergement : 919 € + 32,34 € de taxe de séjour. Draps et serviettes non inclus.</small>
         </article>
         <div class="budget-list" id="budgetList"></div>
       </div>
@@ -187,11 +180,20 @@
         </article>
         <article class="payment-card caution-card">
           <span class="payment-kicker">À prévoir à l'arrivée</span>
-          <h3>Caution</h3>
+          <h3>Caution hébergement</h3>
           <strong id="depositCautionPerPerson">28,57 € / pers.</strong>
           <p>Cette somme est à prévoir <b>en plus du budget</b> : <b>200 € au total</b>, répartis entre les participants.</p>
-          <small>Somme remise sur place et récupérée à la fin du séjour.</small>
+          <small>Caution remboursable, hors dépenses définitives. Montant et conditions du camping à confirmer pour 2027.</small>
         </article>
+      </div>
+      <div class="budget-follow-up">
+        <article><h3>Trésorerie à prévoir</h3><p>Les cautions sont des sommes à avancer, pas des dépenses définitives. Elles ne sont pas incluses dans les six postes ci-dessus.</p>
+          <dl><div><dt>Avec la caution hébergement de 200 €</dt><dd id="cashWithDeposit">3 524,34 € · 503,48 € / pers.</dd></div><div><dt>Avec les deux cautions (200 € + 60 €)</dt><dd id="cashWithBothDeposits">3 584,34 € · 512,05 € / pers.</dd></div></dl>
+          <p>Caution ménage éventuelle : <b>60 € pour le groupe</b> (<span id="cleaningDepositPerPerson">8,57 € / pers.</span>), à confirmer pour 2027. Les deux cautions et les conditions du camping restent à confirmer.</p>
+        </article>
+        <article><h3>Objectif d’épargne provisoire</h3><p class="budget-saving" id="savingsGoal">550,00 € / pers. · 3 850,00 € pour le groupe</p><p>Une marge de sécurité pour les incertitudes restantes. Cet objectif ne s’ajoute pas aux dépenses du budget.</p></article>
+        <article><h3>Hypothèses à vérifier</h3><ul><li><b>Transport : 1 400 €</b>, soit une provision prudente de 200 €/personne pour le train aller-retour et le préacheminement depuis Maurepas. Aucun tarif SNCF confirmé : les tarifs 2027 ne sont pas encore connus.</li><li><b>Alimentation : 588 €</b>, sur la base de 12 €/jour/personne pendant 7 jours budgétés. Le budget alimentaire reste à valider avec un menu détaillé.</li><li>La location de draps et serviettes n’est pas incluse.</li></ul></article>
+        <article><h3>Suivi des possibilités de transport</h3><ul><li><b>100 % train :</b> scénario de référence de ce budget, sans choix définitif ni réservation confirmée.</li><li><b>C1 de Lucas + train :</b> option en pause, potentiellement réétudiable.</li><li><b>Deux voitures :</b> option en pause.</li></ul></article>
       </div>
     </section>
 
@@ -346,7 +348,7 @@
   </dialog>
   <div class="toast" id="toast" role="status"></div>
   <script src="icons.js?v=20261011-4"></script>
-  <script src="app.js?v=20261108-1"></script>
+  <script src="app.js?v=20261108-budget-1"></script>
   <script src="weather.js?v=20261011-4" defer></script>
   <script src="map.js?v=20261011-4" defer></script>
   <script type="module" src="firebase-sync.js?v=20261024-4"></script>

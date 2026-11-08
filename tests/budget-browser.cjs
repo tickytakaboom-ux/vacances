@@ -26,30 +26,39 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin);
     await page.waitForFunction(() => typeof window.getTripData === 'function');
+    assert.equal(await page.locator('#perPersonTotal').textContent(),'474,91 €');
+    assert.match(await page.locator('#cashWithDeposit').textContent(),/3.524,34.*503,48/);
+    assert.match(await page.locator('#cashWithBothDeposits').textContent(),/3.584,34.*512,05/);
+    assert.match(await page.locator('#savingsGoal').textContent(),/550,00.*3.850,00/);
+    for(const width of [390,1280]){
+      await page.setViewportSize({width,height:1000});
+      assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#budget .budget-row,#budget .budget-follow-up article')].every(el=>{const box=el.getBoundingClientRect();return box.left>=0 && box.right<=innerWidth;})),true);
+      await page.locator('#budget').screenshot({path:'.preview/budget-'+width+'.png'});
+    }
     const payload = '<img src="/__budget_missing__.png" onerror="window.__budgetXss=true">';
     const accented = 'Péage & séjour "été" <amis>';
     const original = await page.evaluate(() => window.getTripData());
     const expected = structuredClone(original);
-    for (const count of [4,5,6,7]) {
+    for (const count of [7]) {
       expected.budgets[count].items[0][0] = payload;
       expected.budgets[count].items[1][0] = accented;
     }
     await page.evaluate(data => window.dispatchEvent(new CustomEvent('shared-trip-data', {detail:data})), expected);
     async function check(phase) {
-      for (const count of [4,5,6,7]) {
-        await page.selectOption('#peopleSelect', String(count));
+      for (const count of [7]) {
+
         await page.waitForTimeout(100);
         assert.equal(await page.locator('#budgetList img, #budgetList script').count(), 0, phase + ': aucun élément injecté');
         assert.equal(await page.evaluate(() => window.__budgetXss === true), false, phase + ': aucun script exécuté');
         assert.deepEqual(await page.locator('#budgetList .budget-row span').allTextContents(), expected.budgets[count].items.map(item => item[0]));
         const euro = new Intl.NumberFormat('fr-FR', {style:'currency',currency:'EUR'});
-        assert.deepEqual(await page.locator('#budgetList .budget-row strong').allTextContents(), expected.budgets[count].items.map(item => euro.format(item[1]) + ' / pers.'));
+        assert.deepEqual(await page.locator('#budgetList .budget-row strong').allTextContents(), expected.budgets[count].items.map(item => euro.format(item[1]) + ' pour le groupe'));
         assert.equal(await page.locator('#perPersonTotal').textContent(), euro.format(expected.budgets[count].perPerson));
-        assert.equal(await page.locator('#groupTotal').textContent(), 'Total du groupe : ' + euro.format(expected.budgets[count].total));
+        assert.equal(await page.locator('#groupTotal').textContent(), 'Budget hors cautions : ' + euro.format(expected.budgets[count].total) + ' pour le groupe');
         assert.equal(await page.locator('#depositPerPerson').textContent(), euro.format(275.70 / count) + ' / pers.');
         assert.equal(await page.locator('#depositCautionPerPerson').textContent(), euro.format(200 / count) + ' / pers.');
         assert.equal(await page.locator('#statPeople').textContent(), String(count));
-        assert.equal(await page.locator('#statPrice').textContent(), euro.format(expected.budgets[count].perPerson) + ' + ' + euro.format(200 / count) + ' = ' + euro.format(expected.budgets[count].perPerson + 200 / count));
+        assert.equal(await page.locator('#statPrice').textContent(), euro.format(expected.budgets[count].perPerson));
       }
       assert.deepEqual(await page.evaluate(() => window.getTripData()), expected, phase + ': données intactes');
       assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('zigotos-embrun-data-v1'))), expected, phase + ': cache intact');
@@ -59,8 +68,9 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.reload();
     await page.waitForFunction(() => typeof window.getTripData === 'function');
     await check('rechargement du cache');
-    console.log('PASS budget : réception et cache, texte littéral, aucun script/image injecté, données intactes et calculs pour 4/5/6/7 personnes ; réseau externe bloqué.');
+    console.log('PASS budget : dépenses, cautions, épargne, mobile/bureau, réception et cache, libellés inertes ; réseau externe bloqué.');
   } finally {
+    server.closeAllConnections();
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
   }

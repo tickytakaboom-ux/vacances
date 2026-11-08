@@ -44,7 +44,7 @@ const initialData = {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "5": { total: 1912.10, perPerson: 382.42, items: [["Chalet", 188.42], ["Essence", 36], ["Péage", 18], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "6": { total: 2266.72, perPerson: 377.79, items: [["Chalet", 157.79], ["Essence", 50], ["Péage", 30], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
-    "7": { total: 2411.34, perPerson: 344.48, items: [["Chalet", 135.91], ["Essence", 42.86], ["Péage", 25.71], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] }
+    "7": {"revision":"embrun-2027-train-provision-v1","itemBasis":"group","total":3324.34,"perPerson":474.91,"items":[["Hébergement + taxe de séjour",951.34],["Transport",1400],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",300],["Frais communs et imprévus",50]]}
   },
   faqs: [
     ["D'où part-on et à quelle heure ?", "Le départ se fera depuis Maurepas, à 7 h au plus tard."],
@@ -181,6 +181,8 @@ function normalizeData(source) {
   }
 
   const normalized = { ...structuredClone(initialData), ...structuredClone(source) };
+  // Actualisation ciblée : les anciennes copies locales/Firebase ne rétablissent pas le budget précédent.
+  if (normalized.budgets["7"].revision !== initialData.budgets["7"].revision) normalized.budgets["7"] = structuredClone(initialData.budgets["7"]);
   normalized.text = { ...initialData.text, ...normalized.text };
   if (source?.dataVersion !== initialData.dataVersion) {
     normalized.dataVersion = initialData.dataVersion;
@@ -470,15 +472,19 @@ function updateListTabs() {
 function updateBudget() {
   const count = Number(document.querySelector("#peopleSelect").value);
   const budget = data.budgets[count];
-  document.querySelector("#perPersonTotal").textContent = euro.format(budget.perPerson);
-  document.querySelector("#groupTotal").textContent = `Total du groupe : ${euro.format(budget.total)}`;
+  const groupAmounts = budget.itemBasis === "group";
+  const totalCents = groupAmounts ? budget.items.reduce((sum, item) => sum + Math.round(item[1] * 100), 0) : Math.round(budget.total * 100);
+  const total = totalCents / 100;
+  const perPerson = groupAmounts ? total / count : budget.perPerson;
+  document.querySelector("#perPersonTotal").textContent = euro.format(perPerson);
+  document.querySelector("#groupTotal").textContent = `Budget hors cautions : ${euro.format(total)} pour le groupe`;
   const rows = budget.items.map(item => {
     const row = document.createElement("div");
     row.className = "budget-row";
     const label = document.createElement("span");
     label.textContent = item[0];
     const amount = document.createElement("strong");
-    amount.textContent = `${euro.format(item[1])} / pers.`;
+    amount.textContent = `${euro.format(item[1])}${groupAmounts ? " pour le groupe" : " / pers."}`;
     row.append(label, amount);
     return row;
   });
@@ -486,8 +492,11 @@ function updateBudget() {
   document.querySelector("#depositPerPerson").textContent = `${euro.format(275.70 / count)} / pers.`;
   document.querySelector("#depositCautionPerPerson").textContent = `${euro.format(200 / count)} / pers.`;
   document.querySelector("#statPeople").textContent = count;
-  const cautionPerPerson = 200 / count;
-  document.querySelector("#statPrice").textContent = `${euro.format(budget.perPerson)} + ${euro.format(cautionPerPerson)} = ${euro.format(budget.perPerson + cautionPerPerson)}`;
+  document.querySelector("#statPrice").textContent = euro.format(perPerson);
+  document.querySelector("#cashWithDeposit").textContent = euro.format((totalCents + 20000) / 100) + " · " + euro.format((totalCents + 20000) / 100 / count) + " / pers.";
+  document.querySelector("#cashWithBothDeposits").textContent = euro.format((totalCents + 26000) / 100) + " · " + euro.format((totalCents + 26000) / 100 / count) + " / pers.";
+  document.querySelector("#cleaningDepositPerPerson").textContent = euro.format(60 / count) + " / pers.";
+  document.querySelector("#savingsGoal").textContent = euro.format(550) + " / pers. · " + euro.format(550 * count) + " pour le groupe";
 }
 
 function updateCountdown() {
