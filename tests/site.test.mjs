@@ -97,3 +97,6 @@ test("la validation conserve les champs personnalisés et les anciennes versions
  const before=JSON.stringify(data);const result=functions.normalizeData(data);assert.equal(result.text.intro,"Nos souvenirs");assert.deepEqual(JSON.parse(JSON.stringify(result.shopping)),data.shopping);assert.equal(JSON.stringify(data),before);
  const old=structuredClone(data);delete old.textAuthors;delete old.shoppingVersion;assert.doesNotThrow(()=>functions.normalizeData(old));
 });
+test('les identifiants des contacts sont uniques et non vides',()=>{
+ for(const id of ['', '   ', 'car-1']) {const data=structuredClone(functions.initialData);data.assistanceContacts[1].id=id;assert.throws(()=>functions.normalizeData(data));}
+});

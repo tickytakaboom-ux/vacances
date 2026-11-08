@@ -35,6 +35,28 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.locator('#deviceAccess').count(),0);
       assert.equal(await page.evaluate(()=>window.testListeners[0].ref),'trips/embrun-2027');
       await page.evaluate(()=>window.testListeners[0].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(window.getTripData())}),metadata:{fromCache:false,hasPendingWrites:false}}));
+      const draftResult=await page.evaluate(async()=>{
+        const original=window.getTripData();
+        const field=document.querySelector('.assistance-card input[name="insurer"]');field.value='Brouillon voiture 1';field.focus();field.setSelectionRange(5,5);
+        const remote=window.getTripData();remote.assistanceContacts[1].insurer='Assurance distante voiture 2';remote.text.camping='Nouveau texte du groupe';
+        window.testListeners[0].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(remote)}),metadata:{fromCache:false,hasPendingWrites:false}});
+        const kept=document.querySelector('.assistance-card input[name="insurer"]');
+        const result={draft:kept.value,focus:document.activeElement===kept,cursor:kept.selectionStart,remote:document.querySelectorAll('.assistance-card input[name="insurer"]')[1].value};
+        kept.closest('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,0));
+        result.saved=window.getTripData().assistanceContacts[0].insurer;result.other=window.getTripData().assistanceContacts[1].insurer;
+        document.querySelector('#toggleEdit').click();document.querySelector('[data-key="intro"]').textContent='Mon introduction en cours';
+        const title=document.querySelector('.day-title');title.textContent='Mon titre en cours';title.focus();window.getSelection().setBaseAndExtent(title.firstChild,4,title.firstChild,4);
+        const update=window.getTripData();update.text.camping='Autre changement distant';update.days[1][1]='Journée distante';
+        window.testListeners[0].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(update)}),metadata:{fromCache:false,hasPendingWrites:false}});
+        result.titleFocus=document.activeElement===document.querySelector('.day-title');result.titleCaret=window.getSelection().anchorOffset;result.intro=document.querySelector('[data-key="intro"]').textContent;result.editable=document.querySelector('.day-title').isContentEditable;
+        document.querySelector('#editButton').click();await new Promise(r=>setTimeout(r,0));
+        result.savedIntro=window.getTripData().text.intro;result.camping=window.getTripData().text.camping;result.day=window.getTripData().days[1][1];
+        return result;
+      });
+      assert.equal(draftResult.draft,'Brouillon voiture 1');assert.equal(draftResult.focus,true);assert.equal(draftResult.cursor,5);
+      assert.equal(draftResult.remote,'Assurance distante voiture 2');assert.equal(draftResult.saved,'Brouillon voiture 1');assert.equal(draftResult.other,'Assurance distante voiture 2');
+      assert.equal(draftResult.titleFocus,true);assert.equal(draftResult.titleCaret,4);assert.equal(draftResult.intro,'Mon introduction en cours');assert.equal(draftResult.editable,true);assert.equal(draftResult.savedIntro,'Mon introduction en cours');assert.equal(draftResult.camping,'Autre changement distant');assert.equal(draftResult.day,'Journée distante');
+      await page.evaluate(()=>window.testWrites=0);
       const healthy=await page.evaluate(()=>({data:window.getTripData(),cache:localStorage.getItem('zigotos-embrun-data-v1')}));
       for(const field of ['faqs','activities','days','text','checklist','budgets','assistanceContacts']) {
         await page.evaluate(({data,field})=>{data[field]=null;window.testListeners[0].success({exists:()=>true,data:()=>({contentJson:JSON.stringify(data)}),metadata:{fromCache:false,hasPendingWrites:false}});},{data:healthy.data,field});
@@ -55,5 +77,5 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       await context.close();
     }
     console.log('PASS accès et données : connexion automatique, rejet des structures incorrectes, cache sain conservé, caches corrompus sans plantage ; mobile et bureau, Firebase simulé.');
-  } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}
+  } finally {server.closeAllConnections();await browser?.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

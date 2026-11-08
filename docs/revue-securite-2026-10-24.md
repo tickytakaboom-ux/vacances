@@ -158,3 +158,9 @@ Référence technique : [contrôle des champs et types Firestore](https://fireba
 ## Choix ultérieur : accès automatique confirmé par le responsable
 
 Après usage, le responsable demande explicitement de retirer les approbations par appareil et accepte que toute personne découvrant le site puisse lire et modifier le carnet. Le client se connecte anonymement puis écoute directement le carnet ; aucune consultation members. Les règles exigent une connexion et conservent les contrôles de champs, tailles, UID et dates serveur. La protection du budget et les validations des données sont conservées. Les anciennes fiches members restent privées et inutilisées, sans suppression. Le constat d’accès non réservé aux amis devient une limite volontairement acceptée, et non une restriction toujours en vigueur. Activation : publication du site puis publication manuelle des règles correspondantes.
+
+## Correctifs de revue du 8 novembre 2026
+
+Les brouillons des contacts et des textes en mode édition sont capturés avant le remplacement des données reçues, puis restaurés après rendu, avec focus et sélection. Les données et le cache suivent la version distante ; les brouillons restent locaux jusqu’à enregistrement. Les bases d’édition suivent également la réception pour que l’enregistrement ne rétablisse pas les anciennes valeurs des champs non modifiés. Les champs de contacts nécessitent des identifiants uniques, non vides et bornés.
+
+Tests ajoutés : identifiants dupliqués/vides, réception distante pendant saisie, conservation du curseur, enregistrement du brouillon sans perte des modifications distantes, maintien du mode édition. Vérifications Edge sur mobile et bureau, requêtes Firebase simulées. Aucune modification des règles Firebase ni des données en ligne.

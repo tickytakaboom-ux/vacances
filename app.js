@@ -165,7 +165,7 @@ function normalizeData(source) {
     checklist: value => items(value, item => typeof item.checked === "boolean"),
     shopping: value => items(value, item => typeof item.done === "boolean" && ["undecided", "bring", "buy"].includes(item.decision)),
     ideas: value => items(value, () => true),
-    assistanceContacts: value => list(value, 20, item => record(item) && ["id", "vehicle", "insurer", "number"].every(name => text(item[name])) && optional(item, "author", text)),
+    assistanceContacts: value => list(value, 20, item => record(item) && ["id", "vehicle", "insurer", "number"].every(name => text(item[name])) && item.id.trim().length > 0 && item.id.length <= 128 && optional(item, "author", text)) && new Set(value.map(item => item.id)).size === value.length,
     budgets: value => record(value) && ["4", "5", "6", "7"].every(count => {
       const budget = value[count];
       return record(budget) && number(budget.total) && number(budget.perPerson)
@@ -237,7 +237,42 @@ async function saveData() {
   return window.saveSharedTrip(structuredClone(data));
 }
 
-function render() {
+function captureDrafts() {
+  const fields = [];
+  document.querySelectorAll('.assistance-card').forEach(form => {
+    const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
+    if (!contact) return;
+    for (const name of ['insurer', 'number']) {
+      const input = form.elements[name];
+      if (input.value !== contact[name]) fields.push({selector: '.assistance-card[data-id="' + CSS.escape(contact.id) + '"] input[name="' + name + '"]', value: input.value, input: true, focused: document.activeElement === input, start: input.selectionStart, end: input.selectionEnd});
+    }
+  });
+  if (editing) {
+    document.querySelectorAll('.editable[data-key],.day-title,.day-copy').forEach(element => {
+      const key = element.dataset.key;
+      const column = element.classList.contains('day-title') ? 1 : 2;
+      const baseline = key ? editTextSnapshot?.[key] : editSnapshot?.[element.dataset.index]?.[column];
+      if (element.textContent !== baseline) fields.push({selector: key ? '.editable[data-key="' + CSS.escape(key) + '"]' : (column === 1 ? '.day-title' : '.day-copy') + '[data-index="' + element.dataset.index + '"]', value: element.textContent, focused: document.activeElement === element, start: window.getSelection()?.anchorOffset ?? 0, end: window.getSelection()?.focusOffset ?? 0});
+    });
+  }
+  return fields;
+}
+function restoreDrafts(fields) {
+  document.querySelectorAll('.editable[data-key],.day-title,.day-copy').forEach(element => element.contentEditable = editing);
+  for (const field of fields) {
+    const element = document.querySelector(field.selector);
+    if (!element) continue;
+    if (field.input) element.value = field.value;
+    else element.textContent = field.value;
+    if (field.focused) {
+      element.focus({preventScroll: true});
+      if (field.input && field.start !== null) element.setSelectionRange(field.start, field.end);
+      else if (!field.input && element.firstChild) window.getSelection()?.setBaseAndExtent(element.firstChild, Math.min(field.start, element.textContent.length), element.firstChild, Math.min(field.end, element.textContent.length));
+    }
+  }
+}
+
+function render(drafts = captureDrafts()) {
   document.querySelectorAll(".text-editor").forEach(el => el.remove());
   document.querySelectorAll(".editable[data-key]").forEach(el => {
     const textKey = el.dataset.key;
@@ -259,6 +294,7 @@ function render() {
   updateListTabs();
   renderAssistanceContacts();
   updateBudget();
+  restoreDrafts(drafts);
 }
 
 function renderTimeline() {
@@ -302,11 +338,13 @@ function renderAssistanceContacts() {
   }).join("");
   container.querySelectorAll(".assistance-card").forEach(form => form.addEventListener("submit", async event => {
     event.preventDefault();
+    const drafts = captureDrafts();
     const contact = data.assistanceContacts.find(item => item.id === form.dataset.id);
     contact.insurer = new FormData(form).get("insurer").trim();
     contact.number = new FormData(form).get("number").trim();
     contact.author = currentUserName();
     renderAssistanceContacts();
+    restoreDrafts(drafts);
     const synced = await saveData();
     showToast(synced ? "Assistance enregistrée pour tout le monde" : "Assistance sauvegardée sur cet appareil");
   }));
@@ -481,14 +519,15 @@ async function setEditing(active) {
   if (!active) {
     document.querySelectorAll(".editable[data-key]").forEach(el => {
       const textKey = el.dataset.key;
-      data.text[textKey] = el.textContent.trim();
-      if (editTextSnapshot && data.text[textKey] !== editTextSnapshot[textKey]) {
+      const value = el.textContent.trim();
+      if (editTextSnapshot && value !== editTextSnapshot[textKey]) {
+        data.text[textKey] = value;
         data.textAuthors ??= {};
         data.textAuthors[textKey] = currentUserName();
       }
     });
-    document.querySelectorAll(".day-title").forEach(el => data.days[el.dataset.index][1] = el.textContent.trim());
-    document.querySelectorAll(".day-copy").forEach(el => data.days[el.dataset.index][2] = el.textContent.trim());
+    document.querySelectorAll(".day-title").forEach(el => { if (el.textContent.trim() !== editSnapshot?.[el.dataset.index]?.[1]) data.days[el.dataset.index][1] = el.textContent.trim(); });
+    document.querySelectorAll(".day-copy").forEach(el => { if (el.textContent.trim() !== editSnapshot?.[el.dataset.index]?.[2]) data.days[el.dataset.index][2] = el.textContent.trim(); });
     data.days.forEach((day, index) => {
       if (editSnapshot && (day[1] !== editSnapshot[index]?.[1] || day[2] !== editSnapshot[index]?.[2])) day[3] = currentUserName();
     });
@@ -648,9 +687,11 @@ window.getTripData = () => structuredClone(data);
 window.addEventListener("shared-trip-data", event => {
   try {
     const received = normalizeData(event.detail);
+    const drafts = captureDrafts();
     localStorage.setItem(key, JSON.stringify(received));
     data = received;
-    render();
+    if (editing) { editSnapshot = structuredClone(data.days); editTextSnapshot = structuredClone(data.text); }
+    render(drafts);
     window.clearTripDataError();
   } catch {
     event.preventDefault();
