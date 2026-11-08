@@ -1,7 +1,7 @@
 // Le choix est une simulation locale : il ne réserve aucun transport et ne modifie pas le carnet partagé.
 const transportScenarios = {
   train: {label: "100 % Train", amount: 1400, note: "Référence budgétaire temporaire : provision de 200 € par personne pour le train aller-retour et le préacheminement depuis Maurepas. Aucun billet réservé ; les tarifs 2027 ne sont pas connus."},
-  cars: {label: "2 voitures", amount: 612, note: "En pause : référence historique de deux Clio V, carburant et péages aller-retour. Disponibilité des véhicules et assurances non confirmées."},
+  cars: {label: "2 voitures", amount: 612, note: "En pause : aucun véhicule défini. Le montant de 612 € est une estimation provisoire du carburant et des péages aller-retour ; véhicules, assurances et coût réel restent à confirmer."},
   mixed: {label: "Mixte (C1 + Train)", amount: 1100, note: "En pause : provision de 300 € pour la C1 et de 800 € pour quatre billets de train à 200 € chacun. Lucas et deux passagers en C1, quatre personnes en train. Disponibilité de la C1, assurance et prix des billets non confirmés."}
 };
 function calculateScenarioBudget(budget, scenarioId) {
