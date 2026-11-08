@@ -132,7 +132,7 @@ test('la nouvelle enveloppe loisirs remplace uniquement ce poste dans les copies
 
 test('le récapitulatif alimentaire distingue enveloppe, estimation provisoire et marge sans modifier les scénarios',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');const summary=html.match(/<article id="foodBudgetSummary">([\s\S]*?)<\/article>/)?.[1];assert.ok(summary);
- for(const text of ['588 € pour le groupe · 84 €/personne','Environ 236 € pour le groupe','352 € pour le groupe','estimation provisoire','panier entièrement vérifié','quantités oubliés','variations de prix','achats alimentaires complémentaires','six participants qui ne sont pas végétariens','menus seront préparés plus tard'])assert.ok(summary.includes(text),text);
+ for(const text of ['588 € pour le groupe · 84 €/personne','Environ 236 € pour le groupe','352 € pour le groupe','estimation provisoire','panier entièrement vérifié','réserve flexible','pas une somme obligatoirement réservée à l’alimentation','boissons, snacks','d’autres dépenses communes','intégrée au budget global','besoins réels du groupe','quantités oubliés','variations de prix','achats alimentaires complémentaires','six participants qui ne sont pas végétariens','menus seront préparés plus tard'])assert.ok(summary.includes(text),text);
  assert.equal(588/7,84);assert.equal(588-236,352);
  assert.equal(functions.initialData.budgets['7'].items.find(item=>item[0]==='Alimentation')[1],588);
  for(const [scenario,total] of Object.entries({train:342434,cars:263634,mixed:312434}))assert.equal(functions.calculateScenarioBudget(functions.initialData.budgets['7'],scenario).totalCents,total);
