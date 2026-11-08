@@ -26,9 +26,9 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin);
     await page.waitForFunction(() => typeof window.getTripData === 'function');
-    assert.equal(await page.locator('#perPersonTotal').textContent(),'474,91 €');
-    assert.match(await page.locator('#cashWithDeposit').textContent(),/3.524,34.*503,48/);
-    assert.match(await page.locator('#cashWithBothDeposits').textContent(),/3.584,34.*512,05/);
+    assert.equal(await page.locator('#perPersonTotal').textContent(),'489,19 €');
+    assert.match(await page.locator('#cashWithDeposit').textContent(),/3.624,34.*517,76/);
+    assert.match(await page.locator('#cashWithBothDeposits').textContent(),/3.684,34.*526,33/);
     assert.match(await page.locator('#savingsGoal').textContent(),/550,00.*3.850,00/);
     for(const width of [390,1280]){
       await page.setViewportSize({width,height:1000});
@@ -36,7 +36,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       await page.locator('#budget').screenshot({path:'.preview/budget-'+width+'.png'});
     }
     const beforeScenarios=await page.evaluate(()=>window.getTripData());
-    const scenarios={train:[3324.34,474.91,3524.34,503.48,3584.34,512.05,265.66,37.95,1400],cars:[2536.34,362.33,2736.34,390.91,2796.34,399.48,1053.66,150.52,612],mixed:[3024.34,432.05,3224.34,460.62,3284.34,469.19,565.66,80.81,1100]};
+    const scenarios={train:[3424.34,489.19,3624.34,517.76,3684.34,526.33,165.66,23.67,1400],cars:[2636.34,376.62,2836.34,405.19,2896.34,413.76,953.66,136.24,612],mixed:[3124.34,446.33,3324.34,474.91,3384.34,483.48,465.66,66.52,1100]};
     const euros=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
     for(const width of [390,1280]){
       await page.setViewportSize({width,height:1000});
@@ -49,6 +49,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         assert.equal(await page.locator('#cashWithBothDeposits').textContent(),euros.format(values[4])+' · '+euros.format(values[5])+' / pers.');
         assert.equal(await page.locator('#savingsMargin').textContent(),euros.format(values[6])+' pour le groupe · '+euros.format(values[7])+' / pers.');
         assert.equal(await page.locator('#budgetList .budget-row strong').nth(1).textContent(),euros.format(values[8])+' pour le groupe');
+        assert.equal(await page.locator('#budgetList .budget-row strong').nth(4).textContent(),euros.format(400)+' pour le groupe');
         assert.equal(await page.locator('#savingsGoal').textContent(),euros.format(550)+' / pers. · '+euros.format(3850)+' pour le groupe');
         assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#budget .budget-row,#transportSelect,#budget .budget-follow-up article')].every(el=>{const rect=el.getBoundingClientRect();return rect.left>=0 && rect.right<=innerWidth;})),true);
         await page.locator('#budget').screenshot({path:'.preview/scenario-'+scenario+'-'+width+'.png'});

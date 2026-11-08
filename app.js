@@ -58,7 +58,7 @@ const initialData = {
     "4": { total: 1648.48, perPerson: 407.50, items: [["Chalet", 200], ["Essence", 45], ["Péage", 22.5], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "5": { total: 1912.10, perPerson: 382.42, items: [["Chalet", 188.42], ["Essence", 36], ["Péage", 18], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
     "6": { total: 2266.72, perPerson: 377.79, items: [["Chalet", 157.79], ["Essence", 50], ["Péage", 30], ["Courses", 40], ["Restaurant", 50], ["Activités", 50]] },
-    "7": {"revision":"embrun-2027-train-provision-v1","itemBasis":"group","total":3324.34,"perPerson":474.91,"items":[["Hébergement + taxe de séjour",951.34],["Transport",transportScenarios.train.amount],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",300],["Frais communs et imprévus",50]]}
+    "7": {"revision":"embrun-2027-leisure-400-v2","itemBasis":"group","total":3424.34,"perPerson":489.19,"items":[["Hébergement + taxe de séjour",951.34],["Transport",transportScenarios.train.amount],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",400],["Frais communs et imprévus",50]]}
   },
   faqs: [
     ["D'où part-on et à quelle heure ?", "Le départ se fera depuis Maurepas, à 7 h au plus tard."],
@@ -196,6 +196,13 @@ function normalizeData(source) {
 
   const normalized = { ...structuredClone(initialData), ...structuredClone(source) };
   // Actualisation ciblée : les anciennes copies locales/Firebase ne rétablissent pas le budget précédent.
+  if (normalized.budgets["7"].revision === "embrun-2027-train-provision-v1") {
+    const budget = normalized.budgets["7"];
+    budget.items = budget.items.map(([label, amount]) => [label, label === "Loisirs et restaurants" ? 400 : amount]);
+    budget.total = budget.items.reduce((sum, item) => sum + Math.round(item[1] * 100), 0) / 100;
+    budget.perPerson = Math.round(budget.total * 100 / 7) / 100;
+    budget.revision = initialData.budgets["7"].revision;
+  }
   if (normalized.budgets["7"].revision !== initialData.budgets["7"].revision) normalized.budgets["7"] = structuredClone(initialData.budgets["7"]);
   normalized.text = { ...initialData.text, ...normalized.text };
   if (source?.dataVersion !== initialData.dataVersion) {
