@@ -29,7 +29,35 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.locator('#timeline .planning-optional').count()>0,true);assert.equal(await page.locator('#timeline .planning-pending').count()>0,true);
       for(const href of await page.locator('#timeline .day-links a').evaluateAll(links=>links.map(link=>link.getAttribute('href'))))assert.equal(await page.locator(href).count(),1);
       assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#timeline .day')].every(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;})),true);
-      await page.locator('#programme').screenshot({path:'.preview/planning-'+width+'.png'});
+      const originalData=await page.evaluate(()=>window.getTripData());
+      assert.equal(await page.locator('#timeline .planning-details').count(),2);
+      for(let index=0;index<8;index++)assert.equal(await page.locator('.day-copy').nth(index).evaluate(el=>editableDayText(el)),originalData.days[index][2],'aucune information perdue, jour '+index);
+      assert.equal(await page.evaluate(()=>document.querySelector('#programme>.section-heading').getBoundingClientRect().bottom<=document.querySelector('#timeline').getBoundingClientRect().top),true);
+      if(width<700){
+        assert.equal(await page.locator('#timeline .day-links a').evaluateAll(links=>links.every(a=>a.getBoundingClientRect().height>=44)),true);
+        assert.equal(await page.locator('#timeline .day-links').evaluateAll(groups=>groups.every(group=>{const boxes=[...group.querySelectorAll('a')].map(a=>a.getBoundingClientRect());return boxes.every((a,i)=>boxes.every((b,j)=>i===j||a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top));})),true);
+      }
+      for(const index of [3,5]){
+        const day=page.locator('#timeline .day').nth(index);const detail=day.locator('details');
+        assert.equal(await detail.evaluate(el=>el.open),false);assert.equal(await day.locator('.planning-main').isVisible(),true);assert.equal(await day.locator('.planning-optional').isVisible(),true);
+        if(index===3)assert.match(await detail.locator('summary').textContent(),/À confirmer/);
+        await detail.locator('summary').focus();await page.keyboard.press('Enter');assert.equal(await detail.evaluate(el=>el.open),true);assert.equal(await detail.locator('.planning-part').isVisible(),true);
+        await page.keyboard.press('Space');assert.equal(await detail.evaluate(el=>el.open),false);
+        await detail.locator('summary').click();assert.equal(await detail.evaluate(el=>el.open),true);
+      }
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('shared-trip-data',{detail:window.getTripData(),cancelable:true})));
+      assert.equal(await page.locator('#timeline .planning-details[open]').count(),2,'les notes ouvertes restent ouvertes après réception');
+      await page.evaluate(()=>document.querySelectorAll('#timeline details').forEach(el=>el.open=false));
+      assert.deepEqual(await page.evaluate(()=>window.getTripData()),originalData);
+      await page.evaluate(()=>document.querySelector('#toggleEdit').click());
+      for(let index=0;index<8;index++)assert.equal(await page.locator('.day-copy').nth(index).innerText(),originalData.days[index][2],'édition complète, jour '+index);
+      await page.evaluate(()=>document.querySelector('#editButton').click());
+      await page.waitForFunction(()=>!document.body.classList.contains('editing'));
+      assert.deepEqual(await page.evaluate(()=>window.getTripData()),originalData,'ouvrir/fermer le mode édition ne modifie aucune donnée');
+      const overlayStyles=await page.evaluate(()=>[...document.querySelectorAll('.section-nav,.mobile-nav,.back-to-top,.toast')].map(el=>{const style=el.getAttribute('style');el.style.setProperty('display','none','important');return style;}));
+      await page.locator('#programme').screenshot({path:'.preview/planning-finition-'+width+'.png'});
+      await page.evaluate(styles=>document.querySelectorAll('.section-nav,.mobile-nav,.back-to-top,.toast').forEach((el,i)=>{if(styles[i]===null)el.removeAttribute('style');else el.setAttribute('style',styles[i]);}),overlayStyles);
+
       const initial=await page.evaluate(()=>window.getTripData());
       await page.evaluate(()=>{window.saveSharedTrip=async()=>true;document.querySelector('#toggleEdit').click();});
       const day=page.locator('.day-copy').first();await day.fill('Au programme : notre arrivée personnalisée.\nAu choix : repos.');
@@ -42,6 +70,6 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.locator('#timeline img,#timeline script').count(),0);assert.equal(await page.evaluate(()=>window.planningXss===true),false);assert.deepEqual(errors,[]);
       await context.close();
     }
-    console.log('PASS planning : huit journées, catégories, liens, édition/cache, contenu inerte, budget et activités conservés ; mobile et bureau, réseau externe bloqué.');
+    console.log('PASS planning : liens tactiles 44 px, détails clavier/tactile, contenu intégral et inchangé, notes ouvertes préservées, édition/cache, huit dates et autres rubriques conservées ; mobile et bureau.');
   } finally {server.closeAllConnections();await browser?.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

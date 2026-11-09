@@ -317,7 +317,7 @@ function editableDayText(element) {
     content.querySelectorAll('summary').forEach(summary => summary.remove());
     return content.textContent;
   }
-  return element.classList.contains('day-copy') ? element.innerText : element.textContent;
+  return element.classList.contains('day-copy') && element.childElementCount > 0 ? element.innerText : element.textContent;
 }
 function captureDrafts() {
   const fields = [];
@@ -390,7 +390,7 @@ function renderDayDescription(text, dayIndex) {
     const label = separator < 0 ? '' : line.slice(0, separator);
     if (!Object.hasOwn(labels, label)) return '<span class="planning-part">' + escapeHTML(line) + '</span>';
     const part = '<span class="planning-part planning-' + labels[label] + '"><b>' + escapeHTML(label) + ' :</b> ' + escapeHTML(line.slice(separator + 3)) + '</span>';
-    const summary = dayIndex === 3 && label === 'À confirmer' ? 'À confirmer : feu d’artifice 2027' : dayIndex === 5 && label === 'Itinéraire du groupe' ? 'Itinéraire retenu par le groupe' : '';
+    const summary = dayIndex === 3 && label === 'À confirmer' && line.includes('feu d’artifice') ? 'À confirmer : feu d’artifice 2027' : dayIndex === 5 && label === 'Itinéraire du groupe' ? 'Itinéraire retenu par le groupe' : '';
     return summary ? '<details class="planning-details" data-planning-note="' + dayIndex + '"><summary contenteditable="false">' + summary + '</summary>' + part + '</details>' : part;
   }).join("\n");
 }
