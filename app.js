@@ -312,7 +312,12 @@ async function saveData() {
 
 function editableDayText(element) {
   // Le navigateur peut créer des <br> pendant une saisie multiligne.
-  return element.classList.contains('day-copy') && !element.querySelector('.planning-part') ? element.innerText : element.textContent;
+  if (element.classList.contains('day-copy') && element.querySelector('.planning-part')) {
+    const content = element.cloneNode(true);
+    content.querySelectorAll('summary').forEach(summary => summary.remove());
+    return content.textContent;
+  }
+  return element.classList.contains('day-copy') ? element.innerText : element.textContent;
 }
 function captureDrafts() {
   const fields = [];
@@ -378,13 +383,15 @@ function render(drafts = captureDrafts()) {
   restoreDrafts(drafts);
 }
 
-function renderDayDescription(text) {
+function renderDayDescription(text, dayIndex) {
   const labels = {'Au programme': 'main', 'Au choix': 'optional', 'À confirmer': 'pending', 'Itinéraire du groupe': 'route', 'Option exigeante': 'pending'};
   return text.split("\n").map(line => {
     const separator = line.indexOf(' : ');
     const label = separator < 0 ? '' : line.slice(0, separator);
     if (!Object.hasOwn(labels, label)) return '<span class="planning-part">' + escapeHTML(line) + '</span>';
-    return '<span class="planning-part planning-' + labels[label] + '"><b>' + escapeHTML(label) + ' :</b> ' + escapeHTML(line.slice(separator + 3)) + '</span>';
+    const part = '<span class="planning-part planning-' + labels[label] + '"><b>' + escapeHTML(label) + ' :</b> ' + escapeHTML(line.slice(separator + 3)) + '</span>';
+    const summary = dayIndex === 3 && label === 'À confirmer' ? 'À confirmer : feu d’artifice 2027' : dayIndex === 5 && label === 'Itinéraire du groupe' ? 'Itinéraire retenu par le groupe' : '';
+    return summary ? '<details class="planning-details" data-planning-note="' + dayIndex + '"><summary contenteditable="false">' + summary + '</summary>' + part + '</details>' : part;
   }).join("\n");
 }
 function renderDayReferences(index) {
@@ -397,7 +404,9 @@ function renderTimeline() {
     ["relax", "🟢 Détente"], ["walk", "🟡 Balade"], ["sport", "🟠 Sport"], ["major", "🔵 Sortie majeure"]
   ];
   const timeline = document.querySelector("#timeline");
-  timeline.innerHTML = data.days.map((day, index) => `<article class="day"><span class="day-number">${escapeHTML(day[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${index}">${escapeHTML(day[1])}</strong>${day[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(day[3])}"><b>${escapeHTML(day[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(day[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${index}">${renderDayDescription(day[2])}</p><div class="day-links">${renderDayReferences(index)}</div><label class="day-level level-${escapeHTML(day[4] || "none")}"><span class="sr-only">Rythme de la journée</span><select data-index="${index}"><option value="">Rythme à choisir</option>${levels.map(level => `<option value="${level[0]}"${day[4] === level[0] ? " selected" : ""}>${level[1]}</option>`).join("")}</select></label></div></article>`).join("");
+  const openNotes = new Set([...timeline.querySelectorAll(".planning-details[open]")].map(note => note.dataset.planningNote));
+  timeline.innerHTML = data.days.map((day, index) => `<article class="day"><span class="day-number">${escapeHTML(day[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${index}">${escapeHTML(day[1])}</strong>${day[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(day[3])}"><b>${escapeHTML(day[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(day[3])}</span></span>` : ""}</div><div class="day-copy" data-index="${index}">${renderDayDescription(day[2], index)}</div><div class="day-links">${renderDayReferences(index)}</div><label class="day-level level-${escapeHTML(day[4] || "none")}"><span class="sr-only">Rythme de la journée</span><select data-index="${index}"><option value="">Rythme à choisir</option>${levels.map(level => `<option value="${level[0]}"${day[4] === level[0] ? " selected" : ""}>${level[1]}</option>`).join("")}</select></label></div></article>`).join("");
+  timeline.querySelectorAll(".planning-details").forEach(note => { note.open = openNotes.has(note.dataset.planningNote); });
   timeline.querySelectorAll(".day-level select").forEach(select => select.addEventListener("change", async event => {
     const day = data.days[Number(event.target.dataset.index)];
     day[4] = event.target.value;
