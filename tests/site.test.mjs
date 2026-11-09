@@ -4,7 +4,7 @@ import vm from "node:vm";
 import {readFile} from "node:fs/promises";
 const source = await readFile(new URL("../app.js", import.meta.url), "utf8");
 const normalize = source.slice(source.indexOf("function normalizeData("), source.indexOf("async function saveData("));
-const functions = vm.runInNewContext(source.slice(0, source.indexOf("const key =")) + normalize + ";({initialData,normalizeData,calculateScenarioBudget})", {structuredClone});
+const functions = vm.runInNewContext(source.slice(0, source.indexOf("const key =")) + normalize + ";({initialData,normalizeData,calculateScenarioBudget,previousDefaultDays})", {structuredClone});
 test("les textes personnalisés et données du groupe survivent à la retouche", () => {
   const data = structuredClone(functions.initialData);
   data.text.intro = "Notre texte personnalisé";
@@ -137,4 +137,16 @@ test('le récapitulatif alimentaire distingue enveloppe, estimation provisoire e
  assert.equal(functions.initialData.budgets['7'].items.find(item=>item[0]==='Alimentation')[1],588);
  for(const [scenario,total] of Object.entries({train:342434,cars:263634,mixed:312434}))assert.equal(functions.calculateScenarioBudget(functions.initialData.budgets['7'],scenario).totalCents,total);
  assert.equal((html.match(/id="shoppingList"/g)||[]).length,1);
+});
+
+test('le planning couvre les huit dates et distingue les options et confirmations',()=>{
+ const days=functions.initialData.days;assert.equal(days.length,8);
+ days.forEach((day,index)=>{const date=new Date(Date.UTC(2027,6,11+index));assert.ok(day[0].includes(String(date.getUTCDate())+' juillet'));});
+ assert.match(days[2][2],/station des Orres/);assert.match(days[2][2],/facultatives/);assert.match(days[3][2],/À confirmer.*feu d’artifice/);assert.match(days[4][2],/Toutes les visites ne sont pas imposées/);assert.match(days[5][2],/retenu par le groupe/);assert.match(days[5][2],/passage sous la N94/);assert.match(days[6][2],/suffisamment préparés/);assert.match(days[7][2],/À confirmer/);
+});
+test('les anciens jours par défaut sont actualisés sans écraser les personnalisations ni les autres rubriques',()=>{
+ const source=structuredClone(functions.initialData);source.days=structuredClone(functions.previousDefaultDays);source.days[0][1]='Notre arrivée personnalisée';source.days[1][2]='Notre note du lundi';source.days[1][3]='Julian';source.days[1][4]='relax';
+ const original=JSON.stringify(source);const baseline=functions.normalizeData(functions.initialData);const result=functions.normalizeData(source);
+ assert.equal(result.days[0][0],'Dimanche 11 juillet');assert.equal(result.days[0][1],'Notre arrivée personnalisée');assert.equal(result.days[1][2],'Notre note du lundi');assert.equal(result.days[1][3],'Julian');assert.equal(result.days[1][4],'relax');assert.equal(result.days[5][1],'Crots Branches');
+ for(const key of Object.keys(baseline).filter(key=>key!=='days'))assert.equal(JSON.stringify(result[key]),JSON.stringify(baseline[key]),key);assert.equal(JSON.stringify(source),original);
 });

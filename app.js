@@ -12,6 +12,18 @@ function calculateScenarioBudget(budget, scenarioId) {
   return {scenario, items, totalCents, maximumCashCents, marginCents: 385000 - maximumCashCents};
 }
 
+// Anciens libellés par défaut : ne pas écraser les journées personnalisées du groupe.
+const previousDefaultDays = [
+    ["Jour 1 · Dimanche", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
+    ["Jour 2 · Lundi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 3 · Mardi", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
+    ["Jour 4 · Mercredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 5 · Jeudi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 6 · Vendredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 7 · Samedi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
+    ["Jour 8 · Dimanche", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
+  ];
+
 const initialData = {
   dataVersion: 3,
   activityVersion: 2,
@@ -26,14 +38,46 @@ const initialData = {
   },
   textAuthors: {},
   days: [
-    ["Jour 1 · Dimanche", "Arrivée et installation", "Trajet, courses, découverte du camping et première soirée ensemble."],
-    ["Jour 2 · Lundi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 3 · Mardi", "Les Orres", "Montagne, randonnée, accrobranche ou simplement profiter du panorama."],
-    ["Jour 4 · Mercredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 5 · Jeudi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 6 · Vendredi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 7 · Samedi", "Journée libre", "Une journée à compléter selon les envies du groupe."],
-    ["Jour 8 · Dimanche", "Derniers souvenirs", "Rangement, derniers plongeons et trajet du retour."]
+    [
+      "Dimanche 11 juillet",
+      "Arrivée et installation",
+      "Au programme : trajet vers Embrun, arrivée au camping La Clapière et installation dans le chalet.\nAu choix : découverte du plan d’eau et détente selon l’heure d’arrivée. Journée volontairement légère."
+    ],
+    [
+      "Lundi 12 juillet",
+      "Courses et détente",
+      "Au programme : courses complémentaires si nécessaire, puis baignade, détente et activités libres au plan d’eau. Une journée tranquille pour récupérer du trajet."
+    ],
+    [
+      "Mardi 13 juillet",
+      "Les Orres",
+      "Au programme : journée à la station des Orres et randonnée adaptée aux envies et aux capacités du groupe.\nAu choix : luge sur rail et/ou tyrolienne. Les activités payantes restent facultatives.\nÀ confirmer : horaires et conditions d’accès en transports."
+    ],
+    [
+      "Mercredi 14 juillet",
+      "Repos et fête nationale",
+      "Au programme : journée légère, baignade, détente et temps libre au plan d’eau.\nAu choix : le soir, regarder le feu d’artifice depuis le petit chemin sous le Roc que Julian connaît déjà, si l’événement et les conditions le permettent.\nÀ confirmer : tenue du feu d’artifice en 2027, horaire, programme officiel et conditions d’accès à l’approche du séjour."
+    ],
+    [
+      "Jeudi 15 juillet",
+      "Découverte du territoire",
+      "Au programme : découverte de Mont-Dauphin, en adaptant la journée à l’énergie du groupe.\nAu choix : Sentier des Marmottes et/ou Fontaine Pétrifiante. Toutes les visites ne sont pas imposées dans la même journée.\nÀ confirmer : déplacements en TER et éventuelles correspondances."
+    ],
+    [
+      "Vendredi 16 juillet",
+      "Crots Branches",
+      "Au programme : départ à pied du camping vers Crots Branches, accrobranche et retour avec une marge de temps pour les trajets.\nItinéraire du groupe : voie verte le long du lac, puis passage sous la N94 et arrivée au parc ; parcours retenu par le groupe après repérage Google Maps et reconnaissance visuelle du passage.\nAu choix : pizzeria le soir, selon les envies et l’organisation du groupe."
+    ],
+    [
+      "Samedi 17 juillet",
+      "Journée flexible",
+      "Au choix : récupérer, profiter du plan d’eau ou choisir une activité restante, sans programme collectif imposé. Randonnée possible vers la Ripisylve du Petit Liou.\nOption exigeante : l’Hivernet, uniquement pour les participants motivés et suffisamment préparés."
+    ],
+    [
+      "Dimanche 18 juillet",
+      "Départ",
+      "Au programme : rangement, préparation des bagages, état des lieux et restitution du chalet selon les consignes du camping, puis départ d’Embrun.\nÀ confirmer : horaires selon le transport finalement retenu."
+    ]
   ],
   activities: [
     ["🏊", "Baignade", "Plan d'eau"], ["🏄", "Paddle", "Sur le lac"],
@@ -213,6 +257,12 @@ function normalizeData(source) {
     normalized.activityVersion = initialData.activityVersion;
     normalized.activities = structuredClone(initialData.activities);
   }
+  normalized.days = normalized.days.map((day, index) => {
+    const previous = previousDefaultDays[index];
+    const planned = initialData.days[index];
+    if (!previous || !planned) return day;
+    return day.map((value, column) => column < 3 && value === previous[column] ? planned[column] : value);
+  });
   // Mettre à jour seulement les textes par défaut, sans toucher aux textes du groupe.
   if (normalized.text?.intro === "Le lac à quelques pas, les montagnes tout autour et assez d'activités pour remplir la semaine \u2014 ou ne rien faire du tout.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.";
   if (normalized.text?.intro === "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.";
@@ -260,6 +310,10 @@ async function saveData() {
   return window.saveSharedTrip(structuredClone(data));
 }
 
+function editableDayText(element) {
+  // Le navigateur peut créer des <br> pendant une saisie multiligne.
+  return element.classList.contains('day-copy') && !element.querySelector('.planning-part') ? element.innerText : element.textContent;
+}
 function captureDrafts() {
   const fields = [];
   document.querySelectorAll('.assistance-card').forEach(form => {
@@ -275,13 +329,17 @@ function captureDrafts() {
       const key = element.dataset.key;
       const column = element.classList.contains('day-title') ? 1 : 2;
       const baseline = key ? editTextSnapshot?.[key] : editSnapshot?.[element.dataset.index]?.[column];
-      if (element.textContent !== baseline) fields.push({selector: key ? '.editable[data-key="' + CSS.escape(key) + '"]' : (column === 1 ? '.day-title' : '.day-copy') + '[data-index="' + element.dataset.index + '"]', value: element.textContent, focused: document.activeElement === element, start: window.getSelection()?.anchorOffset ?? 0, end: window.getSelection()?.focusOffset ?? 0});
+      const value = editableDayText(element);
+      if (value !== baseline) fields.push({selector: key ? '.editable[data-key="' + CSS.escape(key) + '"]' : (column === 1 ? '.day-title' : '.day-copy') + '[data-index="' + element.dataset.index + '"]', value, focused: document.activeElement === element, start: window.getSelection()?.anchorOffset ?? 0, end: window.getSelection()?.focusOffset ?? 0});
     });
   }
   return fields;
 }
 function restoreDrafts(fields) {
-  document.querySelectorAll('.editable[data-key],.day-title,.day-copy').forEach(element => element.contentEditable = editing);
+  document.querySelectorAll('.editable[data-key],.day-title,.day-copy').forEach(element => {
+    element.contentEditable = editing;
+    if (editing && element.classList.contains('day-copy')) element.textContent = editableDayText(element);
+  });
   for (const field of fields) {
     const element = document.querySelector(field.selector);
     if (!element) continue;
@@ -320,12 +378,26 @@ function render(drafts = captureDrafts()) {
   restoreDrafts(drafts);
 }
 
+function renderDayDescription(text) {
+  const labels = {'Au programme': 'main', 'Au choix': 'optional', 'À confirmer': 'pending', 'Itinéraire du groupe': 'route', 'Option exigeante': 'pending'};
+  return text.split("\n").map(line => {
+    const separator = line.indexOf(' : ');
+    const label = separator < 0 ? '' : line.slice(0, separator);
+    if (!Object.hasOwn(labels, label)) return '<span class="planning-part">' + escapeHTML(line) + '</span>';
+    return '<span class="planning-part planning-' + labels[label] + '"><b>' + escapeHTML(label) + ' :</b> ' + escapeHTML(line.slice(separator + 3)) + '</span>';
+  }).join("\n");
+}
+function renderDayReferences(index) {
+  const references = {0:[0], 1:[0], 2:[5,6], 3:[0], 5:[3], 6:[6]};
+  return (references[index] || []).filter(activityIndex => data.activities[activityIndex]).map(activityIndex => '<a href="#activity-' + activityIndex + '">Fiche : ' + escapeHTML(data.activities[activityIndex][1]) + '</a>').join('');
+}
+
 function renderTimeline() {
   const levels = [
     ["relax", "🟢 Détente"], ["walk", "🟡 Balade"], ["sport", "🟠 Sport"], ["major", "🔵 Sortie majeure"]
   ];
   const timeline = document.querySelector("#timeline");
-  timeline.innerHTML = data.days.map((day, index) => `<article class="day"><span class="day-number">${escapeHTML(day[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${index}">${escapeHTML(day[1])}</strong>${day[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(day[3])}"><b>${escapeHTML(day[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(day[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${index}">${escapeHTML(day[2])}</p><label class="day-level level-${escapeHTML(day[4] || "none")}"><span class="sr-only">Rythme de la journée</span><select data-index="${index}"><option value="">Rythme à choisir</option>${levels.map(level => `<option value="${level[0]}"${day[4] === level[0] ? " selected" : ""}>${level[1]}</option>`).join("")}</select></label></div></article>`).join("");
+  timeline.innerHTML = data.days.map((day, index) => `<article class="day"><span class="day-number">${escapeHTML(day[0])}</span><div><div class="day-heading"><strong class="day-title" data-index="${index}">${escapeHTML(day[1])}</strong>${day[3] ? `<span class="day-editor" title="Modifié par ${escapeHTML(day[3])}"><b>${escapeHTML(day[3].charAt(0).toUpperCase())}</b><span>${escapeHTML(day[3])}</span></span>` : ""}</div><p class="day-copy" data-index="${index}">${renderDayDescription(day[2])}</p><div class="day-links">${renderDayReferences(index)}</div><label class="day-level level-${escapeHTML(day[4] || "none")}"><span class="sr-only">Rythme de la journée</span><select data-index="${index}"><option value="">Rythme à choisir</option>${levels.map(level => `<option value="${level[0]}"${day[4] === level[0] ? " selected" : ""}>${level[1]}</option>`).join("")}</select></label></div></article>`).join("");
   timeline.querySelectorAll(".day-level select").forEach(select => select.addEventListener("change", async event => {
     const day = data.days[Number(event.target.dataset.index)];
     day[4] = event.target.value;
@@ -338,7 +410,7 @@ function renderTimeline() {
 
 function renderActivities() {
   const grid = document.querySelector("#activityGrid");
-  grid.innerHTML = data.activities.map((activity, index) => `<article class="activity-card${activity[3] || activity[4] ? " has-details" : ""}"><button class="activity-open" type="button" data-index="${index}" aria-label="Ouvrir les détails de ${escapeHTML(activity[1])}"><span class="activity-icon">${window.TripIcons.icon(activity[0])}</span><div class="activity-summary"><div><strong>${escapeHTML(activity[1])}</strong>${activity[4] ? `<span class="activity-price">${escapeHTML(activity[4])}</span>` : ""}</div><small>${escapeHTML(activity[3] || activity[2] || "Ajouter des détails")}</small>${activity[5] ? `<span class="activity-editor" title="Modifié par ${escapeHTML(activity[5])}"><b>${escapeHTML(activity[5].charAt(0).toUpperCase())}</b></span>` : ""}</div><span class="activity-more">Détails <b>${window.TripIcons.icon("arrow-right")}</b></span></button></article>`).join("");
+  grid.innerHTML = data.activities.map((activity, index) => `<article id="activity-${index}" class="activity-card${activity[3] || activity[4] ? " has-details" : ""}"><button class="activity-open" type="button" data-index="${index}" aria-label="Ouvrir les détails de ${escapeHTML(activity[1])}"><span class="activity-icon">${window.TripIcons.icon(activity[0])}</span><div class="activity-summary"><div><strong>${escapeHTML(activity[1])}</strong>${activity[4] ? `<span class="activity-price">${escapeHTML(activity[4])}</span>` : ""}</div><small>${escapeHTML(activity[3] || activity[2] || "Ajouter des détails")}</small>${activity[5] ? `<span class="activity-editor" title="Modifié par ${escapeHTML(activity[5])}"><b>${escapeHTML(activity[5].charAt(0).toUpperCase())}</b></span>` : ""}</div><span class="activity-more">Détails <b>${window.TripIcons.icon("arrow-right")}</b></span></button></article>`).join("");
   grid.querySelectorAll(".activity-open").forEach(button => button.addEventListener("click", () => openActivityDialog(Number(button.dataset.index))));
 }
 
@@ -546,7 +618,7 @@ async function setEditing(active) {
   document.querySelector("#editButton").setAttribute("aria-pressed", String(active));
   document.querySelector("#editButton").innerHTML = active ? window.TripIcons.icon("check") + " Terminer" : window.TripIcons.icon("pencil") + " Modifier";
   document.querySelectorAll(".editable").forEach(el => el.contentEditable = active);
-  document.querySelectorAll(".day-title,.day-copy").forEach(el => el.contentEditable = active);
+  document.querySelectorAll(".day-title,.day-copy").forEach(el => { el.contentEditable = active; if (active && el.classList.contains("day-copy")) el.textContent = editableDayText(el); });
   if (!active) {
     document.querySelectorAll(".editable[data-key]").forEach(el => {
       const textKey = el.dataset.key;
@@ -558,7 +630,7 @@ async function setEditing(active) {
       }
     });
     document.querySelectorAll(".day-title").forEach(el => { if (el.textContent.trim() !== editSnapshot?.[el.dataset.index]?.[1]) data.days[el.dataset.index][1] = el.textContent.trim(); });
-    document.querySelectorAll(".day-copy").forEach(el => { if (el.textContent.trim() !== editSnapshot?.[el.dataset.index]?.[2]) data.days[el.dataset.index][2] = el.textContent.trim(); });
+    document.querySelectorAll(".day-copy").forEach(el => { const value = editableDayText(el).trim(); if (value !== editSnapshot?.[el.dataset.index]?.[2]) data.days[el.dataset.index][2] = value; });
     data.days.forEach((day, index) => {
       if (editSnapshot && (day[1] !== editSnapshot[index]?.[1] || day[2] !== editSnapshot[index]?.[2])) day[3] = currentUserName();
     });
