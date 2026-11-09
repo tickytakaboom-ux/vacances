@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../theme.js',import.meta.url),'utf8');
+function harness({dark=false,stored=null,blocked=false}={}){
+ const storage=new Map(stored===null?[]:[['zigotos-theme-v1',stored]]);const events={},docEvents={},mediaEvents={};const attributes={};const icon={};const button={setAttribute:(key,value)=>attributes[key]=value,querySelector:()=>icon,addEventListener:(name,fn)=>events[name]=fn};const root={dataset:{}};const media={matches:dark,addEventListener:(name,fn)=>mediaEvents[name]=fn};
+ vm.runInNewContext(source,{window:{matchMedia:()=>media,addEventListener:(name,fn)=>events[name]=fn},document:{documentElement:root,querySelector:()=>({setAttribute(){}}),querySelectorAll:()=>[button],addEventListener:(name,fn)=>docEvents[name]=fn},localStorage:{getItem:key=>{if(blocked)throw Error('bloqué');return storage.get(key)||null;},setItem:(key,value)=>{if(blocked)throw Error('bloqué');storage.set(key,value);}}});docEvents.DOMContentLoaded();return {root,media,mediaEvents,events,storage,attributes,button};
+}
+test('le thème suit le système avant un choix explicite puis conserve ce choix',()=>{const h=harness({dark:true});assert.equal(h.root.dataset.theme,'dark');h.media.matches=false;h.mediaEvents.change();assert.equal(h.root.dataset.theme,'light');h.events.click();assert.equal(h.storage.get('zigotos-theme-v1'),'dark');h.mediaEvents.change();assert.equal(h.root.dataset.theme,'dark');assert.equal(h.attributes['aria-pressed'],'true');});
+test('préférence enregistrée, valeur invalide et synchronisation entre onglets',()=>{const h=harness({dark:true,stored:'light'});assert.equal(h.root.dataset.theme,'light');h.storage.set('zigotos-theme-v1','dark');h.events.storage({key:'zigotos-theme-v1'});assert.equal(h.root.dataset.theme,'dark');assert.equal(harness({dark:true,stored:'invalide'}).root.dataset.theme,'dark');});
+test('le bouton reste utilisable si le stockage local est refusé',()=>{const h=harness({blocked:true});h.events.click();assert.equal(h.root.dataset.theme,'dark');assert.equal(h.attributes['aria-label'],'Mode sombre');});
+test('le thème est chargé avant les styles et inclus dans le paquet publié',async()=>{for(const file of ['index.html','confidentialite.html','mentions-legales.html','regles-utilisation.html']){const html=await readFile(new URL('../'+file,import.meta.url),'utf8');assert.ok(html.indexOf('src="theme.js')<html.indexOf('href="styles.css'));assert.match(html,/data-theme-toggle/);}const workflow=await readFile(new URL('../.github/workflows/weather-pages.yml',import.meta.url),'utf8');assert.match(workflow,/icons.js theme.js app.js/);});
