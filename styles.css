@@ -61,25 +61,28 @@
 
 /* Thème local : palette nocturne douce, sans modifier les données du carnet. */
 :root{color-scheme:light}.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:0 0 44px;border:1px solid currentColor;border-radius:var(--radius);background:transparent;color:inherit;font:24px/1 sans-serif;cursor:pointer}.info-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-:root[data-theme="dark"]{color-scheme:dark;--paper:#191919;--cream:#252422;--ink:#eee9df;--muted:#beb8ae;--forest:#2b2c2a;--forest-2:#121313;--orange:#e9a071;--lime:#c2caa5;--blue:#b3bfbd;--danger:#f0a48c;--accent-strong:#b66847;--theme-link:#d6c4a7;--line:rgba(235,228,216,.18);--wash-6:rgba(0,0,0,.35);--wash-11:rgba(0,0,0,.5);--wash-12:rgba(0,0,0,.72);--wash-15:rgba(214,196,167,.15);--wash-19:rgba(235,228,216,.16);--wash-20:rgba(235,228,216,.65);--wash-22:rgba(194,202,165,.12);--wash-23:rgba(214,196,167,.12);--wash-24:rgba(214,196,167,.2)}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#101c19;--cream:#1c2d27;--ink:#eeeade;--muted:#b9c6be;--forest:#173c30;--forest-2:#0b1814;--orange:#e9a071;--lime:#bfd58c;--blue:#92c3c8;--danger:#f0a48c;--accent-strong:#b66847;--theme-link:#b8d8b7;--line:rgba(223,235,217,.18);--wash-6:rgba(0,0,0,.35);--wash-11:rgba(0,0,0,.5);--wash-12:rgba(0,0,0,.72);--wash-15:rgba(184,216,183,.15);--wash-19:rgba(223,235,217,.16);--wash-20:rgba(223,235,217,.65);--wash-22:rgba(191,213,140,.12);--wash-23:rgba(184,216,183,.12);--wash-24:rgba(184,216,183,.2)}
 :root[data-theme="dark"] :is(dialog,.weather-card,.trip-map-card,.button-outline,.checklist-form input,.check-edit,.check-delete,.assistance-card input,.people-control select,.activity-dialog input,.activity-dialog textarea){background:var(--cream);color:var(--ink)}
 :root[data-theme="dark"] :is(input,textarea,select,button){color:inherit}
-:root[data-theme="dark"] :is(.total-card,.checklist-heading>span){background:#34332b;color:var(--ink)}
+:root[data-theme="dark"] :is(.total-card,.checklist-heading>span){background:#3b3547;color:var(--ink)}
 :root[data-theme="dark"] .total-card>strong{color:var(--lime)}
 :root[data-theme="dark"] .stat-card.accent{background:#50382c;color:var(--ink)}
 :root[data-theme="dark"] .stat-card.accent span{color:var(--muted)}
-:root[data-theme="dark"] .caution-card{background:#2c3336;color:var(--ink)}
+:root[data-theme="dark"] .caution-card{background:#24434c;color:var(--ink)}
 :root[data-theme="dark"] :is(.countdown b,.text-link,.info-page a,.welcome-dialog a,.weather-temperature,.trip-map-places a,.trip-map-popup a,.trip-map-popup>strong,.list-tab,.mobile-nav a span){color:var(--theme-link)}
 :root[data-theme="dark"] #programme :is(.planning-optional b,.day-links a,.planning-details summary){color:var(--theme-link)}
-:root[data-theme="dark"] .section-nav a.active{background:#3a3a34;color:var(--ink)}
+:root[data-theme="dark"] .section-nav a.active{background:#304b3c;color:var(--ink)}
 :root[data-theme="dark"] .mobile-nav a.active{color:var(--theme-link)}
-:root[data-theme="dark"] :is(.user-avatar,.day-editor b,.text-editor b,.check-author b,.checklist-item.checked .check-mark,.contact-actions a,.assistance-card button,.assistance-card a){color:#2b2c2a}
-:root[data-theme="dark"] :is(.button-primary,.contact-actions a:last-child){background:var(--orange);color:#221f1c}
+:root[data-theme="dark"] :is(.user-avatar,.day-editor b,.text-editor b,.check-author b,.checklist-item.checked .check-mark,.contact-actions a,.assistance-card button,.assistance-card a){color:#173c30}
+:root[data-theme="dark"] :is(.button-primary,.contact-actions a:last-child){background:var(--orange);color:#14231c}
 :root[data-theme="dark"] .toast{background:var(--cream);color:var(--ink)}
 :root[data-theme="dark"] .trip-map-canvas :is(.leaflet-popup-content-wrapper,.leaflet-popup-tip,.leaflet-control-zoom a,.leaflet-control-attribution){background:var(--cream);color:var(--ink)}
 :root[data-theme="dark"] .trip-map-canvas .leaflet-control-attribution a{color:var(--theme-link)}
 @media(max-width:600px){.topbar{gap:8px}.top-actions{gap:8px}.theme-toggle{width:44px;min-height:44px}.topbar .brand>span:not(.brand-mark){display:none}}
 
-:root[data-theme="dark"] :is(.private-note,.shopping-choice,.show-more,.trip-map-filters button,.trip-map-actions button,.day-level select){background:var(--cream);color:var(--ink)}:root[data-theme="dark"] :is(.trip-map-gate>h3,.weather-day>strong){color:var(--theme-link)}:root[data-theme="dark"] .trip-map-filters button[aria-pressed="true"]{background:#3a3a34;color:var(--ink)}@media(max-width:600px){.topbar .sync-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
+:root[data-theme="dark"] :is(.private-note,.shopping-choice,.show-more,.trip-map-filters button,.trip-map-actions button,.day-level select){background:var(--cream);color:var(--ink)}:root[data-theme="dark"] :is(.trip-map-gate>h3,.weather-day>strong){color:var(--theme-link)}:root[data-theme="dark"] .trip-map-filters button[aria-pressed="true"]{background:#304b3c;color:var(--ink)}@media(max-width:600px){.topbar .sync-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}
 
 :root[data-theme="dark"] a{color:var(--theme-link)}
+
+/* Variations nocturnes : lac bleu, terre cuite et prune sur une base vert forêt. */
+:root[data-theme="dark"] .hero-card{background:#243c49}:root[data-theme="dark"] .weather-card{background:#243c49}:root[data-theme="dark"] .total-card>strong{color:#ecc9ad}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(2){background:#3b3547}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(3){background:#49372e}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(4){background:#243c49}:root[data-theme="dark"] .checklist-heading>span{background:#304735}
