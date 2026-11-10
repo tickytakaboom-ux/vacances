@@ -86,3 +86,6 @@
 
 /* Variations nocturnes : lac bleu, terre cuite et prune sur une base vert forêt. */
 :root[data-theme="dark"] .hero-card{background:#243c49}:root[data-theme="dark"] .weather-card{background:#243c49}:root[data-theme="dark"] .total-card>strong{color:#ecc9ad}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(2){background:#3b3547}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(3){background:#49372e}:root[data-theme="dark"] #budget .budget-follow-up article:nth-child(4){background:#243c49}:root[data-theme="dark"] .checklist-heading>span{background:#304735}
+
+/* Ma valise : regroupement local, sans modifier les listes partagées. */
+#personalList .packing-category{margin-top:24px}#personalList .packing-category h3{font-size:17px;margin:0 0 10px;color:var(--ink)}#personalList .packing-category:first-child{margin-top:8px}#personalList .packing-conditional{display:block;margin-top:4px;font-size:11px;line-height:1.5;color:var(--muted)}#personalList .packing-bedding-note{padding:12px;border-left:3px solid var(--orange)}#personalList .check-text{overflow-wrap:anywhere}#panel-personal .packing-guidance{margin:16px 0}

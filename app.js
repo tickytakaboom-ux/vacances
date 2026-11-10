@@ -133,6 +133,7 @@ let editSnapshot = null;
 let editTextSnapshot = null;
 let activeListTab = localStorage.getItem(listTabKey) || "shared";
 let personalLoadFailed = false;
+let personalMigrationUnsaved = false;
 let personalChecklist = loadPersonalChecklist();
 let activeActivityIndex = null;
 let showAllFaqs = false;
@@ -146,32 +147,98 @@ function currentUserName() {
   return localStorage.getItem(nameKey) || "";
 }
 
+function personalChecklistCategories() {
+  return [
+    {id:"clothes", title:"Vêtements", items:[
+      ["clothes","Vêtements quotidiens (t-shirts, shorts, pantalons…)",["Vêtements"]],
+      ["underwear","Sous-vêtements et chaussettes",["Sous-vêtements"]],
+      ["sleepwear","Pyjama / tenue pour dormir",["Pyjama"]],
+      ["swimwear","Maillots de bain (idéalement 2)",["Maillot de bain","Maillots de bain"]],
+      ["sweater","Sweat ou pull chaud",["Sweat","Pull chaud"]],
+      ["jacket","Coupe-vent / veste imperméable",["Coupe-vent"]]
+    ]},
+    {id:"shoes", title:"Chaussures", items:[
+      ["walking-shoes","Baskets confortables pour les balades",["Chaussures","Baskets confortables"]],
+      ["city-shoes","Baskets de ville (si besoin)",[],true],
+      ["sandals","Claquettes / tongs",[]]
+    ]},
+    {id:"hygiene", title:"Hygiène et santé", items:[
+      ["toiletries","Trousse de toilette",[]],
+      ["medicine","Médicaments personnels",["Médicaments"]],
+      ["shower-towel","Serviette de douche",["Serviettes"]],
+      ["beach-towel","Serviette de plage / lac",["Serviette de plage"]],
+      ["sunscreen","Crème solaire",[]],
+      ["repellent","Anti-moustiques",[]],
+      ["lip-balm","Baume à lèvres",[]]
+    ]},
+    {id:"outings", title:"Sorties et balades", items:[
+      ["daypack","Petit sac à dos de journée",["Sac à dos"]],
+      ["bottle","Gourde individuelle",["Gourde"]],
+      ["sunglasses","Lunettes de soleil",[]],
+      ["hat","Casquette / chapeau",["Casquette"]]
+    ]},
+    {id:"electronics", title:"Électronique et papiers", items:[
+      ["phone","Téléphone",[]],
+      ["charger","Chargeur et câble",["Chargeur","Chargeurs"]],
+      ["powerbank","Batterie externe",[]],
+      ["identity","Pièce d’identité",["Papiers d'identité","Pièce d'identité"]],
+      ["health-card","Carte Vitale",[]],
+      ["payment","Carte bancaire / espèces",[]]
+    ]},
+    {id:"bedding", title:"Divers et literie", items:[
+      ["laundry-bag","Sac pour le linge sale",[]],
+      ["sheets","Draps et taie d’oreiller adaptés au couchage (à confirmer)",["Draps"],true],
+      ["sleeping-bag","Sac de couchage léger ou location de linge (alternative éventuelle, à confirmer)",[],true]
+    ]}
+  ];
+}
+function personalChecklistReferences() {
+  return personalChecklistCategories().flatMap(group => group.items.map(([id, text, aliases, conditional]) => ({id: 'packing-' + id, text, aliases, conditional: Boolean(conditional), category: group.id})));
+}
+function normalizePersonalText(text) {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function personalChecklistIdentity(text) {
+  const name = normalizePersonalText(text);
+  const reference = personalChecklistReferences().find(item => [item.text, ...item.aliases].some(label => normalizePersonalText(label) === name));
+  return reference ? reference.id : 'custom:' + name;
+}
+function migratePersonalChecklist(saved) {
+  const references = personalChecklistReferences();
+  const items = new Map(references.map(item => [item.id, {id:item.id, text:item.text, checked:false}]));
+  const custom = new Map();
+  for (const item of saved) {
+    const reference = references.find(ref => ref.id === item.id) || references.find(ref => [ref.text, ...ref.aliases].some(label => normalizePersonalText(label) === normalizePersonalText(item.text)));
+    if (reference) {
+      const target = items.get(reference.id);
+      target.checked = target.checked || item.checked;
+      if (reference.id === item.id) target.text = item.text;
+    } else {
+      const name = normalizePersonalText(item.text);
+      if (custom.has(name)) custom.get(name).checked ||= item.checked;
+      else custom.set(name, {...item});
+    }
+  }
+  return [...items.values(), ...custom.values()];
+}
 function loadPersonalChecklist() {
-  const newEssentials = ["Coupe-vent", "Claquettes / tongs", "Lunettes de soleil", "Casquette", "Gourde", "Crème solaire", "Anti-moustiques", "Baume à lèvres", "Batterie externe"];
-  const defaults = ["Vêtements", "Sous-vêtements", "Maillot de bain", "Trousse de toilette", "Médicaments", "Chargeur", "Papiers d'identité", "Chaussures", "Serviettes", ...newEssentials]
-    .map((text, index) => ({ id: `personal-${index}`, text, checked: false }));
+  const defaults = () => migratePersonalChecklist([]);
   try {
     const saved = JSON.parse(localStorage.getItem(personalChecklistKey));
-    if (saved === null) return defaults;
-    if (!Array.isArray(saved) || saved.length > 1000 || saved.some(item => !item || typeof item.id !== "string" || !item.id || typeof item.text !== "string" || typeof item.checked !== "boolean") || new Set(saved.map(item => item.id)).size !== saved.length) throw new TypeError("Liste personnelle invalide");
-    if (localStorage.getItem(personalChecklistVersionKey) !== "2") {
-      const normalizedTexts = saved.map(item => item.text.toLocaleLowerCase("fr").replace(/[\s/-]+/g, " ").trim());
-      newEssentials.forEach((text, index) => {
-        const normalizedText = text.toLocaleLowerCase("fr").replace(/[\s/-]+/g, " ").trim();
-        if (!normalizedTexts.includes(normalizedText)) saved.push({ id: `personal-new-${index}-${Date.now()}`, text, checked: false });
-      });
-      const hasCharger = normalizedTexts.some(text => text === "chargeur" || text === "chargeurs");
-      if (!hasCharger) saved.push({ id: `personal-new-charger-${Date.now()}`, text: "Chargeur", checked: false });
-      localStorage.setItem(personalChecklistKey, JSON.stringify(saved));
-      localStorage.setItem(personalChecklistVersionKey, "2");
-    }
-    return saved;
-  }
-  catch { personalLoadFailed = true; return defaults; }
+    if (saved !== null && (!Array.isArray(saved) || saved.length > 1000 || saved.some(item => !item || typeof item.id !== 'string' || !item.id || typeof item.text !== 'string' || typeof item.checked !== 'boolean') || new Set(saved.map(item => item.id)).size !== saved.length)) throw new TypeError('Liste personnelle invalide');
+    if (saved !== null && localStorage.getItem(personalChecklistVersionKey) === '3') return saved;
+    const migrated = saved === null ? defaults() : migratePersonalChecklist(saved);
+    try {
+      localStorage.setItem(personalChecklistKey, JSON.stringify(migrated));
+      localStorage.setItem(personalChecklistVersionKey, '3');
+    } catch { personalMigrationUnsaved = true; }
+    return migrated;
+  } catch { personalLoadFailed = true; return defaults(); }
 }
 
 function savePersonalChecklist() {
-  localStorage.setItem(personalChecklistKey, JSON.stringify(personalChecklist));
+  try { localStorage.setItem(personalChecklistKey, JSON.stringify(personalChecklist)); }
+  catch { showToast("Impossible d’enregistrer ta valise sur cet appareil"); }
 }
 
 function updateUserBadge(name) {
@@ -494,7 +561,18 @@ function renderPersonalChecklist() {
   const list = document.querySelector("#personalList");
   const completed = personalChecklist.filter(item => item.checked).length;
   if (activeListTab === "personal") document.querySelector("#checklistProgress").textContent = `${completed} / ${personalChecklist.length} dans ma valise`;
-  list.innerHTML = personalChecklist.map(item => `<article class="checklist-item${item.checked ? " checked" : ""}" data-id="${escapeHTML(item.id)}"><label><input type="checkbox" ${item.checked ? "checked" : ""}><span class="check-mark">${window.TripIcons.icon("check")}</span><span class="check-text">${escapeHTML(item.text)}</span></label><button class="personal-edit check-edit" type="button" aria-label="Modifier ${escapeHTML(item.text)}">${window.TripIcons.icon("pencil")}</button><button class="personal-delete check-delete" type="button" aria-label="Supprimer ${escapeHTML(item.text)}">${window.TripIcons.icon("x")}</button></article>`).join("");
+  const references = personalChecklistReferences();
+  const groups = [...personalChecklistCategories(), {id:'custom', title:'Mes ajouts', items:[]}];
+  list.innerHTML = groups.map(group => {
+    const items = personalChecklist.filter(item => (references.find(ref => ref.id === item.id)?.category || 'custom') === group.id);
+    if (!items.length) return '';
+    const beddingNote = group.id === 'bedding' ? '<p class="list-note packing-bedding-note">Literie à confirmer avec le camping : draps et taie, ou sac de couchage léger ou location de linge sont des alternatives éventuelles. N’apporte pas tout systématiquement.</p>' : '';
+    return '<section class="packing-category" aria-labelledby="packing-category-' + group.id + '"><h3 id="packing-category-' + group.id + '">' + escapeHTML(group.title) + '</h3>' + beddingNote + items.map(item => {
+      const conditional = references.find(ref => ref.id === item.id)?.conditional;
+      const badge = conditional ? '<small class="packing-conditional">' + (group.id === 'bedding' ? 'Alternative · à confirmer' : 'Si besoin') + '</small>' : '';
+      return '<article class="checklist-item' + (item.checked ? ' checked' : '') + '" data-id="' + escapeHTML(item.id) + '"><label><input type="checkbox" ' + (item.checked ? 'checked' : '') + '><span class="check-mark">' + window.TripIcons.icon('check') + '</span><span class="check-text">' + escapeHTML(item.text) + badge + '</span></label><button class="personal-edit check-edit" type="button" aria-label="Modifier ' + escapeHTML(item.text) + '">' + window.TripIcons.icon('pencil') + '</button><button class="personal-delete check-delete" type="button" aria-label="Supprimer ' + escapeHTML(item.text) + '">' + window.TripIcons.icon('x') + '</button></article>';
+    }).join('') + '</section>';
+  }).join('');
   list.querySelectorAll("input[type=checkbox]").forEach(input => input.addEventListener("change", event => {
     const item = personalChecklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     item.checked = event.target.checked;
@@ -505,6 +583,7 @@ function renderPersonalChecklist() {
     const item = personalChecklist.find(entry => entry.id === event.target.closest(".checklist-item").dataset.id);
     const nextText = prompt("Modifier cet élément personnel :", item.text)?.trim();
     if (!nextText || nextText === item.text) return;
+    if (personalChecklist.some(other => other.id !== item.id && personalChecklistIdentity(other.text) === personalChecklistIdentity(nextText))) { showToast('Cet élément est déjà dans ta valise'); return; }
     item.text = nextText;
     savePersonalChecklist();
     renderPersonalChecklist();
@@ -712,6 +791,7 @@ document.querySelector("#personalForm").addEventListener("submit", event => {
   const input = document.querySelector("#personalInput");
   const text = input.value.trim().replace(/\s+/g, " ");
   if (!text) return;
+  if (personalChecklist.some(item => personalChecklistIdentity(item.text) === personalChecklistIdentity(text))) { showToast('Cet élément est déjà dans ta valise'); return; }
   personalChecklist.push({ id: `personal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, text, checked: false });
   input.value = "";
   savePersonalChecklist();
@@ -813,6 +893,7 @@ window.addEventListener("shared-trip-data", event => {
 
 render();
 if (dataLoadFailed) reportDataError("La copie locale du carnet est illisible. La version initiale est affichée en attendant le carnet partagé ; la copie locale n’a pas été effacée.");
+if (personalMigrationUnsaved) reportDataError("Ta valise a été mise à jour à l’écran, mais la sauvegarde locale a échoué. Tes anciennes données n’ont pas été effacées.");
 if (personalLoadFailed) reportDataError("La copie locale de ta valise est illisible. La liste initiale est affichée ; la copie enregistrée n’a pas été effacée.");
 updateUserBadge(currentUserName());
 updateAdminControls();
