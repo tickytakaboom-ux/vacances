@@ -150,3 +150,15 @@ test('les anciens jours par défaut sont actualisés sans écraser les personnal
  assert.equal(result.days[0][0],'Dimanche 11 juillet');assert.equal(result.days[0][1],'Notre arrivée personnalisée');assert.equal(result.days[1][2],'Notre note du lundi');assert.equal(result.days[1][3],'Julian');assert.equal(result.days[1][4],'relax');assert.equal(result.days[5][1],'Crots Branches');
  for(const key of Object.keys(baseline).filter(key=>key!=='days'))assert.equal(JSON.stringify(result[key]),JSON.stringify(baseline[key]),key);assert.equal(JSON.stringify(source),original);
 });
+
+ test("FAQ : 12 références, migration ciblée et idempotente sans toucher aux autres données", () => {
+ const data=structuredClone(functions.initialData);assert.equal(data.faqs.length,12);
+ assert.equal(data.faqs[0][0],"Quand et où part-on ?");assert.equal(data.faqs[11][0],"Et si quelqu'un doit annuler ?");
+ data.faqVersion=3;data.faqs=[["D'où part-on et à quelle heure ?","Le départ se fera depuis Maurepas, à 7 h au plus tard."],["Qui dort où ?","Notre répartition personnalisée"],["Notre question","Notre réponse"]];
+ const before=structuredClone(data), result=functions.normalizeData(data);
+ assert.equal(result.faqVersion,4);assert.equal(result.faqs.length,13);assert.equal(result.faqs[6][1],"Notre répartition personnalisée");assert.equal(result.faqs[12][0],"Notre question");
+ assert.equal(JSON.stringify(data),JSON.stringify(before));assert.equal(JSON.stringify(functions.normalizeData(result)),JSON.stringify(result));
+ for(const key of ['days','budgets','activities','checklist','shopping','assistanceContacts'])assert.equal(JSON.stringify(result[key]),JSON.stringify(functions.normalizeData({...before,faqVersion:4})[key]));
+ const future=structuredClone(data);future.faqVersion=5;assert.equal(JSON.stringify(functions.normalizeData(future).faqs),JSON.stringify(future.faqs));
+ const full=structuredClone(data);full.faqs=Array.from({length:100},(_,i)=>['Question '+i,'Réponse']);assert.equal(functions.normalizeData(full).faqs.length,100);assert.equal(functions.normalizeData(full).faqVersion,3);
+ });

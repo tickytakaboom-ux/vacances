@@ -27,7 +27,7 @@ const previousDefaultDays = [
 const initialData = {
   dataVersion: 3,
   activityVersion: 2,
-  faqVersion: 3,
+  faqVersion: 4,
   checklistVersion: 3,
   contactsVersion: 1,
   ideasVersion: 1,
@@ -105,16 +105,55 @@ const initialData = {
     "7": {"revision":"embrun-2027-leisure-400-v2","itemBasis":"group","total":3424.34,"perPerson":489.19,"items":[["Hébergement + taxe de séjour",951.34],["Transport",transportScenarios.train.amount],["Alimentation",588],["Déplacements locaux et divers",35],["Loisirs et restaurants",400],["Frais communs et imprévus",50]]}
   },
   faqs: [
-    ["D'où part-on et à quelle heure ?", "Le départ se fera depuis Maurepas, à 7 h au plus tard."],
-    ["Comment se répartit-on dans les voitures ?", "Deux voitures sont prévues : 3 personnes dans l'une et 4 personnes dans l'autre. La répartition exacte sera décidée avant le départ."],
-    ["Les draps et les serviettes sont-ils fournis ?", "Oui, en supplément. Les draps coûtent 15 € pour une personne ou 25 € pour deux personnes. Le kit avec une petite et une grande serviette coûte 20 € par personne."],
-    ["Qui conduit ?", "Ceux qui ont le permis. Les conducteurs et les voitures seront fixés avant le départ."],
-    ["Comment fait-on les courses ?", "On prépare la liste ensemble dans l’onglet Courses."],
-    ["Qui dort où ?", "Tout le monde dans le chalet de 7 personnes. La répartition se fera sur place."],
-    ["Comment partage-t-on le budget ?", "À parts égales pour les courses, le voyage et la location. Chacun paie ses activités et son restaurant."],
-    ["Quand faut-il réserver ?", "Au plus tard en janvier. L'objectif est de tout fixer avant la fin de l'année civile."],
-    ["Et si quelqu'un annule ?", "La part engagée reste due afin de ne pas augmenter le budget des autres."]
+  [
+    "Quand et où part-on ?",
+    "Le séjour est prévu du dimanche 11 au dimanche 18 juillet 2027, à Embrun, dans les Hautes-Alpes. Nous prévoyons de loger au camping municipal La Clapière, dans un chalet Alizée pour 7 personnes. La réservation reste à confirmer."
+  ],
+  [
+    "Comment va-t-on à Embrun ?",
+    "Le train est actuellement notre scénario de référence. Deux autres possibilités restent étudiées : deux voitures ou une voiture combinée avec le train. Le transport définitif et les horaires ne sont pas encore confirmés."
+  ],
+  [
+    "Quel budget faut-il prévoir ?",
+    "L'objectif d'épargne provisoire est de 550 € par personne. Avec le scénario 100 % train, les dépenses sont estimées à 489,19 € par personne hors cautions, et la trésorerie à prévoir à 526,33 € par personne en incluant les cautions estimées. Les tarifs réels peuvent encore évoluer."
+  ],
+  [
+    "Comment partage-t-on les dépenses ?",
+    "Les dépenses communes sont réparties entre les 7 participants. Le budget prévoit notamment les courses, le transport, l'hébergement et une enveloppe collective de 400 € pour les loisirs et restaurants. Les dépenses personnelles supplémentaires restent à la charge de chacun."
+  ],
+  [
+    "Quand faut-il réserver et payer ?",
+    "Le chalet n'est pas encore réservé. Nous attendons les informations du camping concernant les réservations 2027, les tarifs et les modalités de paiement. Pour le transport, les dates d'ouverture des ventes SNCF restent à confirmer. Les échéances précises seront communiquées au groupe dès qu'elles seront connues."
+  ],
+  [
+    "Les draps et les serviettes sont-ils fournis ?",
+    "Le linge de lit et de toilette est probablement non fourni, mais nous attendons la confirmation du camping. Des possibilités de location pourraient exister. En attendant, prévoyez de pouvoir apporter votre linge personnel. Consultez la liste « Ma valise » pour les détails."
+  ],
+  [
+    "Qui dort où ?",
+    "Nous prévoyons un chalet pouvant accueillir les 7 participants. La répartition des couchages sera organisée ensemble, selon les préférences et les contraintes de chacun."
+  ],
+  [
+    "Qu'est-ce qu'on doit apporter ?",
+    "Toutes les affaires à prévoir figurent dans la rubrique « À emporter », avec trois listes : « Matériel commun », « Ma valise » et « Courses ». Chacun prépare ses affaires personnelles, tandis que le matériel commun est réparti entre les participants."
+  ],
+  [
+    "Comment s'organisent les repas et les courses ?",
+    "Nous prévoyons principalement de cuisiner au chalet, avec des pique-niques pendant certaines sorties et une soirée pizzeria. Les grosses courses sont envisagées en début de séjour, avec un réapprovisionnement si nécessaire. Les menus exacts seront décidés plus tard."
+  ],
+  [
+    "Les activités sont-elles obligatoires ?",
+    "Non ! Le planning est prévisionnel et chacun pourra participer aux activités selon ses envies. Nous prévoyons aussi du temps libre pour profiter du lac, nous reposer ou improviser. Les sorties nécessitant une réservation ou une organisation collective seront discutées à l'avance."
+  ],
+  [
+    "Peut-on modifier le planning et les listes ?",
+    "Oui, le carnet permet de contribuer à l'organisation du séjour. Certaines informations et listes sont partagées avec le groupe, tandis que la liste personnelle « Ma valise » est enregistrée uniquement sur l'appareil utilisé. Les changements importants doivent être discutés et validés ensemble."
+  ],
+  [
+    "Et si quelqu'un doit annuler ?",
+    "Il faudra prévenir le groupe dès que possible. Les conséquences financières dépendront des réservations déjà effectuées, des conditions d'annulation applicables et des dépenses réellement engagées. Aucune pénalité forfaitaire ou règle de remboursement supplémentaire ne doit être présentée comme définitivement établie."
   ]
+]
 };
 
 const key = "zigotos-embrun-data-v1";
@@ -335,9 +374,18 @@ function normalizeData(source) {
   if (normalized.text?.intro === "On loge à sept au camping La Clapière. Le programme, les idées et les affaires à emporter se préparent ici, ensemble.") normalized.text.intro = "On loge à sept au camping La Clapière. Le programme et les affaires à emporter se préparent ici, ensemble.";
   normalized.faqs = normalized.faqs.map(faq => faq[0] === "Comment fait-on les courses ?" && faq[1] === "Dans un magasin 👍" ? [faq[0], "On prépare la liste ensemble dans l’onglet Courses."] : faq);
   normalized.activities = normalized.activities.map(activity => [activity[0] || "✨", activity[1] || "Activité", activity[2] || "", activity[3] || "", activity[4] || "", activity[5] || ""]);
-  if (source?.faqVersion !== initialData.faqVersion) {
-    normalized.faqVersion = initialData.faqVersion;
-    normalized.faqs = structuredClone(initialData.faqs);
+  // Ne remplacer que les entrées standard connues ; conserver les réponses du groupe.
+  if (!source.faqVersion || source.faqVersion < initialData.faqVersion) {
+    const previousFaqs = [["D'où part-on et à quelle heure ?","Le départ se fera depuis Maurepas, à 7 h au plus tard."],["Comment se répartit-on dans les voitures ?","Deux voitures sont prévues : 3 personnes dans l'une et 4 personnes dans l'autre. La répartition exacte sera décidée avant le départ."],["Les draps et les serviettes sont-ils fournis ?","Oui, en supplément. Les draps coûtent 15 € pour une personne ou 25 € pour deux personnes. Le kit avec une petite et une grande serviette coûte 20 € par personne."],["Qui conduit ?","Ceux qui ont le permis. Les conducteurs et les voitures seront fixés avant le départ."],["Comment fait-on les courses ?","On prépare la liste ensemble dans l’onglet Courses."],["Qui dort où ?","Tout le monde dans le chalet de 7 personnes. La répartition se fera sur place."],["Comment partage-t-on le budget ?","À parts égales pour les courses, le voyage et la location. Chacun paie ses activités et son restaurant."],["Quand faut-il réserver ?","Au plus tard en janvier. L'objectif est de tout fixer avant la fin de l'année civile."],["Et si quelqu'un annule ?","La part engagée reste due afin de ne pas augmenter le budget des autres."]];
+    previousFaqs.push(["Comment fait-on les courses ?", "Dans un magasin 👍"]);
+    const custom = normalized.faqs.filter(faq => !previousFaqs.some(previous => previous[0] === faq[0] && previous[1] === faq[1]));
+    const updated = initialData.faqs.map(reference => structuredClone(custom.find(faq => faq[0] === reference[0]) || reference));
+    for (const faq of custom) if (!updated.some(entry => entry[0] === faq[0] && entry[1] === faq[1])) updated.push(structuredClone(faq));
+    // Une liste exceptionnellement longue reste intacte plutôt que d'en tronquer le contenu.
+    if (updated.length <= 100) {
+      normalized.faqs = updated;
+      normalized.faqVersion = initialData.faqVersion;
+    }
   }
   if (source?.checklistVersion !== initialData.checklistVersion) {
     normalized.checklistVersion = initialData.checklistVersion;
@@ -436,11 +484,16 @@ function render(drafts = captureDrafts()) {
   renderTimeline();
   renderActivities();
   const displayedFaqs = showAllFaqs ? data.faqs : data.faqs.slice(0, 5);
-  document.querySelector("#faqList").innerHTML = displayedFaqs.map(f => `<article class="faq-item"><button class="faq-question" type="button">${escapeHTML(f[0])}<span>${window.TripIcons.icon("plus")}</span></button><div class="faq-answer">${escapeHTML(f[1])}</div></article>`).join("");
+  document.querySelector("#faqList").innerHTML = displayedFaqs.map((f, index) => `<article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-${index}">${escapeHTML(f[0])}<span>${window.TripIcons.icon("plus")}</span></button><div class="faq-answer" id="faq-answer-${index}">${escapeHTML(f[1])}</div></article>`).join("");
   const faqShowAll = document.querySelector("#faqShowAll");
   faqShowAll.hidden = data.faqs.length <= 5;
   faqShowAll.textContent = showAllFaqs ? "Réduire la liste" : `Voir les ${data.faqs.length} questions`;
-  document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => button.parentElement.classList.toggle("open")));
+  faqShowAll.setAttribute("aria-expanded", String(showAllFaqs));
+  faqShowAll.setAttribute("aria-controls", "faqList");
+  document.querySelectorAll(".faq-question").forEach(button => button.addEventListener("click", () => {
+    const open = button.parentElement.classList.toggle("open");
+    button.setAttribute("aria-expanded", String(open));
+  }));
   renderChecklist();
   renderPersonalChecklist();
   renderShoppingList();
