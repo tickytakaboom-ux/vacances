@@ -94,6 +94,14 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.waitForFunction(() => typeof window.getTripData === 'function');
     await check('rechargement du cache');
     assert.equal(await page.locator('#transportSelect').inputValue(),'train');
+    assert.deepEqual(await page.locator('#transportSelect option').allTextContents(),['100 % Train','2 voitures (En pause)','Mixte (En pause)']);
+    assert.equal(await page.locator('#transportSelect option:disabled').count(),0);
+    assert.equal(await page.locator('.lodging-status').innerText(),'Hébergement envisagé — réservation non effectuée');
+    for(const width of [390,1280]){
+      await page.setViewportSize({width,height:900});
+      assert.equal(await page.locator('.lodging-status').evaluate(e=>{const r=e.getBoundingClientRect();return getComputedStyle(e).display!=='none'&&r.width>0&&r.left>=0&&r.right<=innerWidth;}),true);
+      assert.equal(await page.locator('#transportSelect').evaluate(e=>e.getBoundingClientRect().right<=innerWidth),true);
+    }
     console.log('PASS budget : 3 scénarios x mobile/bureau, dépenses, cautions, marges, épargne, sélection locale, réception/cache et libellés inertes ; réseau externe bloqué.');
   } finally {
     server.closeAllConnections();

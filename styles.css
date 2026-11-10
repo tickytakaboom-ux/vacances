@@ -89,3 +89,5 @@
 
 /* Ma valise : regroupement local, sans modifier les listes partagées. */
 #personalList .packing-category{margin-top:24px}#personalList .packing-category h3{font-size:17px;margin:0 0 10px;color:var(--ink)}#personalList .packing-category:first-child{margin-top:8px}#personalList .packing-conditional{display:block;margin-top:4px;font-size:11px;line-height:1.5;color:var(--muted)}#personalList .packing-bedding-note{padding:12px;border-left:3px solid var(--orange)}#personalList .check-text{overflow-wrap:anywhere}#panel-personal .packing-guidance{margin:16px 0}
+
+.camping-copy .lodging-status{font-size:14px;font-weight:600;line-height:1.5;color:var(--ink);border-left:3px solid var(--orange);padding:8px 12px;margin:20px 0}
